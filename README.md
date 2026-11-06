@@ -1,79 +1,34 @@
-# 🎬 VideoSlim - Kompresor Video Statis & Pengatur FPS Client-Side
+# 📱 WhatsApp 30 FPS Video Compressor (100% Client-Side FFmpeg)
 
-Website statis kompresor video modern, cepat, privat 100%, dan responsif untuk semua perangkat (HP / Mobile, Tablet, Laptop, dan Desktop). Dilengkapi fitur unggulan: **Pertahankan Kualitas Visual 100% dan Hanya Menurunkan FPS**, siap dideploy langsung di **GitHub Pages** tanpa biaya server.
-
----
-
-## ✨ Fitur Utama
-
-1. **🌟 Mode Khusus: Turunkan FPS Saja (Pertahankan Kualitas Visual)**
-   - Resolusi 100% asli dipertahankan (piksel tetap tajam dan jernih).
-   - Bitrate tinggi dipertahankan.
-   - Hanya memotong frame per detik (FPS) berlebih (misal 60/30 FPS diturunkan ke 24, 20, 15, atau 10 FPS).
-   - Sangat ideal untuk rekaman presentasi, webinar, tutorial rekaman layar, video podcast, dan vlog di mana gerakan kamera tidak cepat.
-   - Menghemat ukuran **40% hingga 75%** tanpa mengaburkan teks atau detail visual!
-
-2. **⚡ Mode Kompresi Seimbang (Balanced)**
-   - Menyeimbangkan resolusi (720p/1080p), FPS 24, dan bitrate optimal untuk video sehari-hari.
-
-3. **📦 Mode Kompresi Maksimal (Space Saver)**
-   - Resolusi 480p, FPS 15, bitrate hemat untuk WhatsApp, Discord, dan email.
-
-4. **🛠️ Mode Kustomisasi Lengkap (Advanced Control)**
-   - Slider FPS Bebas (5 - 60 FPS).
-   - Pengatur Resolusi (Original 100%, 75%, 50%, 720p, 480p, 360p).
-   - Pengatur Bitrate Video (200 Kbps - 10 Mbps).
-   - Pengaturan Audio: Pertahankan Audio Asli atau Hapus Audio (Mute) untuk hemat ekstra.
-   - Pemotong Durasi Video (Trimming Start - End Time).
-
-5. **🔒 100% Privasi & Client-Side (Tanpa Server)**
-   - Video diproses secara lokal di RAM/GPU perangkat Anda menggunakan HTML5 Canvas, Web Audio API, dan MediaRecorder.
-   - Tidak ada video yang dikirim ke internet, menjamin keamanan data pribadi.
-
-6. **📱 Desain Super Responsif & Modern**
-   - Mendukung layar HP (Android, iOS Safari), tablet, laptop, dan monitor desktop lebar.
-   - Dark Mode & Light Mode dengan penyimpanan preferensi otomatis.
-   - Pratinjau perbandingan video (Before vs After) interaktif.
+Website statis kompresor video khusus pemutaran **Status WhatsApp** yang 100% berjalan murni di peramban pengguna (client-side) tanpa dependensi server, siap dideploy langsung ke **GitHub Pages**.
 
 ---
 
-## 🚀 Cara Menjalankan di GitHub Pages (Langkah Cepat)
+## 🛠️ Solusi Masalah Teknis
 
-Website ini 100% statis murni sehingga sangat mudah dipasang di GitHub Pages gratis seumur hidup:
-
-### Langkah 1: Buat Repository di GitHub
-1. Masuk ke akun [GitHub](https://github.com/) Anda.
-2. Klik tombol **New** (atau kunjungi [github.com/new](https://github.com/new)).
-3. Beri nama repository, misalnya: `video-compressor`.
-4. Pilih opsi **Public**.
-5. Klik **Create repository**.
-
-### Langkah 2: Upload File
-1. Ekstrak file `video-compressor-gh-pages.zip`.
-2. Di halaman repository GitHub Anda, pilih tautan **"uploading an existing file"**.
-3. Tarik dan lepas file `index.html` dan `README.md` ke browser.
-4. Klik tombol hijau **Commit changes**.
-
-### Langkah 3: Aktifkan GitHub Pages
-1. Buka tab **Settings** di repository GitHub Anda.
-2. Di menu bilah sisi kiri, klik **Pages** (di bawah grup *Code and automation*).
-3. Pada bagian **Build and deployment**:
-   - **Source**: Pilih `Deploy from a branch`.
-   - **Branch**: Pilih `main` (atau `master`) dan folder `/ (root)`.
-4. Klik tombol **Save**.
-
-🎉 **Selesai!** Tunggu 1–2 menit, GitHub akan menampilkan tautan situs aktif Anda:
-`https://<username-anda>.github.io/video-compressor/`
+1. **Bebas Masalah Durasi 00:00 & Audio Hilang**:
+   - Pendekatan lama (Canvas + MediaRecorder) menyebabkan header durasi rusak di HP (`00:00` / status "Diputar Selesai") dan audio yang bisu/hilang karena restriksi AudioContext Android.
+   - Solusi: Menggunakan **FFmpeg.wasm v0.11.2** untuk encoding H.264 asli dan AAC 44.1kHz dengan flag `-movflags +faststart`.
+2. **Bebas Error Cross-Origin Worker**:
+   - FFmpeg v0.12 memecah worker ke chunk eksternal (`814.ffmpeg.js`) yang diblokir oleh Same-Origin Policy di GitHub Pages (`Failed to construct 'Worker'`).
+   - Solusi: Menggunakan **FFmpeg.wasm v0.11.2** via CDN (`https://unpkg.com/@ffmpeg/ffmpeg@0.11.2/dist/ffmpeg.min.js`) dengan core `@ffmpeg/core@0.11.0` yang berupa single-bundle worker stabil tanpa konfigurasi COOP/COEP rumit.
+3. **Standar Video WhatsApp Status**:
+   - **Lock Frame Rate**: 30 FPS konstan (`fps=30`).
+   - **Dimensi Genap**: `scale=trunc(iw/2)*2:trunc(ih/2)*2` agar libx264 tidak gagal.
+   - **Video Codec**: `-c:v libx264 -preset ultrafast -crf 22 -pix_fmt yuv420p` (ringan dan hemat RAM HP).
+   - **Audio Codec**: `-c:a aac -b:a 128k -ar 44100` (suara sinkron dan jernih).
+   - **FastStart Atom MOOV**: `-movflags +faststart` (metadata durasi ditaruh di awal file sehingga langsung berputar di WhatsApp tanpa loading lama).
 
 ---
 
-## 💻 Menjalankan Secara Offline / Lokal
+## 🚀 Cara Pasang di GitHub Pages (3 Langkah Cepat)
 
-Anda juga dapat menggunakan website ini secara offline tanpa koneksi internet sama sekali:
-1. Cukup klik ganda (double-click) file `index.html` di komputer atau laptop Anda.
-2. File akan langsung terbuka di browser (Chrome, Firefox, Edge, Safari) dan siap digunakan!
+1. Buat repository baru di [GitHub](https://github.com/new) (misal: `wa-video-compressor`), set ke **Public**.
+2. Unggah file `index.html` dan `README.md` ke repository tersebut, lalu klik **Commit changes**.
+3. Buka tab **Settings** &rarr; **Pages** &rarr; pilih branch **main** dan folder **/ (root)** &rarr; klik **Save**.
+4. Website aktif di: `https://<username>.github.io/<repo-name>/`.
 
 ---
 
 ## 📄 Lisensi
-Didistribusikan di bawah Lisensi MIT. Bebas digunakan, dimodifikasi, dan dipublikasikan kembali.
+Lisensi MIT. Bebas digunakan dan dimodifikasi.
