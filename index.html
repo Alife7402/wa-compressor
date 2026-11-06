@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoSlim - Kompresor Video Statis & Pengatur FPS Client-Side</title>
+  <meta name="description" content="Kompres video langsung di browser Anda secara offline, privat, dan cepat. Fitur khusus pertahankan kualitas visual tinggi hanya dengan menurunkan FPS. Siap pakai untuk GitHub Pages.">
+  <!-- Tailwind CSS 3.4.17 CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.7);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 glass-card">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 dark:from-brand-400 dark:to-purple-400 bg-clip-text text-transparent">
+              VideoSlim
+            </h1>
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+              Client-Side
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Kompresi Cepat, Privasi 100%, Tanpa Kirim Server</p>
+        </div>
+      </div>
+
+      <!-- Action Nav Buttons -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="btnOpenGhGuide" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span class="hidden md:inline">Panduan</span> GitHub Pages
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggle" aria-label="Ganti Tema" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+          <svg id="sunIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg id="moonIcon" class="w-4 h-4 block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+    <!-- Privacy & Offline Banner -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 text-xs sm:text-sm">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-2.5 w-2.5 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <p><strong class="font-semibold text-emerald-700 dark:text-emerald-400">100% Client-Side & Privat:</strong> Video diproses langsung di peramban Anda menggunakan Canvas & MediaStream. Tidak ada file yang diunggah ke internet/server manapun.</p>
+      </div>
+      <div class="flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 font-medium shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <span>Aman & Gratis</span>
+      </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="uploadSection" class="glass-card rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/5 relative overflow-hidden transition-all">
+      <input type="file" id="videoInput" accept="video/*" class="hidden">
+      
+      <div id="dropZone" class="group border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-brand-500 dark:hover:border-brand-500 rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200 bg-slate-50/50 dark:bg-slate-900/30 hover:bg-brand-50/30 dark:hover:bg-brand-950/20">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-md shadow-brand-500/10">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
+          Tarik & Lepas File Video di Sini
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">
+          Mendukung MP4, WebM, MOV, MKV, AVI, dan format video HTML5 lainnya
+        </p>
+        <button type="button" id="btnSelectFile" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-brand-600/30 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Pilih File Video dari Perangkat
+        </button>
+      </div>
+
+      <!-- Quick sample file button for easy testing -->
+      <div class="mt-4 text-center">
+        <span class="text-xs text-slate-400 dark:text-slate-500">Atau coba buat: </span>
+        <button id="btnCreateSample" type="button" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+          Buat Video Uji Coba Otomatis (Sample 5 Detik)
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Video Dashboard & Controls (Hidden until file selected) -->
+    <div id="videoDashboard" class="hidden space-y-6">
+
+      <!-- Video Info Card -->
+      <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-md">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+              <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+              </svg>
+            </div>
+            <div class="overflow-hidden">
+              <h3 id="metaFileName" class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate max-w-xs sm:max-w-md">
+                video.mp4
+              </h3>
+              <div class="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                <span id="metaFileSize" class="font-medium text-slate-700 dark:text-slate-300">0 MB</span>
+                <span>•</span>
+                <span id="metaResolution">1920 x 1080</span>
+                <span>•</span>
+                <span id="metaDuration">00:00</span>
+                <span>•</span>
+                <span id="metaEstFps">~30 FPS</span>
+              </div>
+            </div>
+          </div>
+          <button id="btnChangeVideo" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0">
+            Ganti Video
+          </button>
+        </div>
+      </div>
+
+      <!-- Compression Modes Tab Selector -->
+      <div class="glass-card rounded-2xl p-2 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+          <!-- Tab 1: Khusus Turunkan FPS (Special feature requested) -->
+          <button id="tabFpsOnly" class="mode-tab flex flex-col items-center justify-center p-3 rounded-xl border-2 text-center transition-all bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-300 font-bold shadow-sm">
+            <span class="flex items-center gap-1 text-xs sm:text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Turunkan FPS Saja
+            </span>
+            <span class="text-[10px] font-normal opacity-80 mt-0.5">Pertahankan Kualitas Visual</span>
+          </button>
+
+          <!-- Tab 2: Balanced -->
+          <button id="tabBalanced" class="mode-tab flex flex-col items-center justify-center p-3 rounded-xl border-2 border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 text-center transition-all">
+            <span class="flex items-center gap-1 text-xs sm:text-sm font-semibold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+              </svg>
+              Mode Seimbang
+            </span>
+            <span class="text-[10px] font-normal opacity-80 mt-0.5">Bitrate & FPS Proporsional</span>
+          </button>
+
+          <!-- Tab 3: Max Space Saver -->
+          <button id="tabMaxSave" class="mode-tab flex flex-col items-center justify-center p-3 rounded-xl border-2 border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 text-center transition-all">
+            <span class="flex items-center gap-1 text-xs sm:text-sm font-semibold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Kompresi Maksimal
+            </span>
+            <span class="text-[10px] font-normal opacity-80 mt-0.5">Ukuran Paling Kecil</span>
+          </button>
+
+          <!-- Tab 4: Custom -->
+          <button id="tabCustom" class="mode-tab flex flex-col items-center justify-center p-3 rounded-xl border-2 border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 text-center transition-all">
+            <span class="flex items-center gap-1 text-xs sm:text-sm font-semibold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              Kustom Lengkap
+            </span>
+            <span class="text-[10px] font-normal opacity-80 mt-0.5">Atur Sendiri Semua Parameter</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Panel Details -->
+      <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-lg space-y-6">
+
+        <!-- Mode 1: FPS-Only Settings (Highlight Feature) -->
+        <div id="panelFpsOnly" class="space-y-4">
+          <div class="p-4 rounded-xl bg-gradient-to-r from-brand-500/10 to-purple-500/10 border border-brand-500/20">
+            <h4 class="font-bold text-sm sm:text-base text-brand-700 dark:text-brand-300 flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Fitur Utama: Pertahankan Resolusi 100% & Kualitas Visual
+            </h4>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+              Mode ini <strong>tidak mengubah resolusi piksel asli</strong> dan mempertahankan ketajaman gambar tinggi, hanya mengurangi jumlah bingkai per detik (FPS). Sangat efektif menghemat ukuran hingga <strong>40% - 70%</strong> untuk video presentasi, tutorial layar, webinar, vlog berbicara, dan video dengan sedikit gerakan cepat.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+              Pilih Target Frame Rate (FPS)
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <button type="button" class="fps-preset-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-brand-500 bg-white dark:bg-slate-900/60 text-left transition" data-fps="24">
+                <div class="font-bold text-sm text-slate-800 dark:text-slate-100">24 FPS</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Standar Bioskop</div>
+                <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Hemat ~20-30%</div>
+              </button>
+              <button type="button" class="fps-preset-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-brand-500 bg-white dark:bg-slate-900/60 text-left transition" data-fps="20">
+                <div class="font-bold text-sm text-slate-800 dark:text-slate-100">20 FPS</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Halus & Ringan</div>
+                <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Hemat ~35-45%</div>
+              </button>
+              <button type="button" class="fps-preset-btn active-fps p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/40 text-left transition shadow-sm" data-fps="15">
+                <div class="flex items-center justify-between">
+                  <div class="font-bold text-sm text-brand-700 dark:text-brand-300">15 FPS</div>
+                  <span class="text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-brand-500 text-white">Terbaik</span>
+                </div>
+                <div class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">Rekomendasi Seimbang</div>
+                <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Hemat ~50-60%</div>
+              </button>
+              <button type="button" class="fps-preset-btn p-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-brand-500 bg-white dark:bg-slate-900/60 text-left transition" data-fps="10">
+                <div class="font-bold text-sm text-slate-800 dark:text-slate-100">10 FPS</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Slide & Presentasi</div>
+                <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Hemat ~70-80%</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode 2: Balanced Info -->
+        <div id="panelBalanced" class="hidden space-y-4">
+          <div class="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs sm:text-sm text-blue-900 dark:text-blue-200">
+            <strong>Mode Seimbang:</strong> Mengoptimalkan resolusi hingga maksimal 720p/1080p, menurunkan FPS ke 24 FPS, dan menerapkan bitrate standar menengah agar video tetap enak ditonton di berbagai perangkat dengan ukuran yang pas.
+          </div>
+        </div>
+
+        <!-- Mode 3: Max Space Saver Info -->
+        <div id="panelMaxSave" class="hidden space-y-4">
+          <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs sm:text-sm text-amber-900 dark:text-amber-200">
+            <strong>Mode Kompresi Maksimal:</strong> Mengubah resolusi ke 480p, FPS ke 15 FPS, dan bitrate rendah. Sangat cocok jika Anda ingin mengirim video lewat WhatsApp, Discord tanpa Nitro, email, atau kuota hemat.
+          </div>
+        </div>
+
+        <!-- Mode 4: Custom Settings Controls (Accessible in Custom or expanded) -->
+        <div id="panelCustom" class="space-y-5 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>Parameter Teknis Lanjutan</span>
+            <span id="customModeIndicator" class="text-[10px] text-brand-600 dark:text-brand-400 font-semibold">(Otomatis disesuaikan oleh mode terpilih)</span>
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- FPS Slider Control -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs font-medium">
+                <span class="text-slate-700 dark:text-slate-300">Target Frame Rate:</span>
+                <span id="valFps" class="font-bold text-brand-600 dark:text-brand-400 text-sm">15 FPS</span>
+              </div>
+              <input type="range" id="sliderFps" min="5" max="60" step="1" value="15" class="w-full accent-brand-600">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>5 FPS (Teks)</span>
+                <span>15 FPS</span>
+                <span>30 FPS</span>
+                <span>60 FPS</span>
+              </div>
+            </div>
+
+            <!-- Resolution Scale Control -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs font-medium">
+                <span class="text-slate-700 dark:text-slate-300">Skala Resolusi:</span>
+                <span id="valResolution" class="font-bold text-brand-600 dark:text-brand-400 text-sm">100% (Asli)</span>
+              </div>
+              <select id="selectResolution" class="w-full text-xs font-medium p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <option value="1.0">100% - Pertahankan Resolusi Asli (Paling Tajam)</option>
+                <option value="0.75">75% - Sedikit Perkecil (Kompromi Bagus)</option>
+                <option value="0.5">50% - Setengah Ukuran Piksel</option>
+                <option value="720p">Maksimal 720p (HD)</option>
+                <option value="480p">Maksimal 480p (Hemat)</option>
+                <option value="360p">Maksimal 360p (Ekstrem Kecil)</option>
+              </select>
+              <div id="targetResPreview" class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Target: 1920 x 1080</div>
+            </div>
+
+            <!-- Target Bitrate Control -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs font-medium">
+                <span class="text-slate-700 dark:text-slate-300">Kualitas Bitrate Video:</span>
+                <span id="valBitrate" class="font-bold text-brand-600 dark:text-brand-400 text-sm">Tinggi (2.5 Mbps)</span>
+              </div>
+              <input type="range" id="sliderBitrate" min="200" max="10000" step="100" value="2500" class="w-full accent-brand-600">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>200 Kbps</span>
+                <span>2.5 Mbps</span>
+                <span>10 Mbps</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Audio & Format Options -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Audio Settings -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Pengaturan Audio (Suara Video):
+              </label>
+              <select id="selectAudioMode" class="w-full text-xs font-medium p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <option value="keep">Pertahankan Audio Asli (Suara Lengkap)</option>
+                <option value="mute">Hapus Audio / Heningkan (Mute) - Hemat Ukuran Ekstra</option>
+              </select>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                Jika video tidak butuh suara, opsi Mute menghemat 20-30% ruang tambahan.
+              </p>
+            </div>
+
+            <!-- Output Format -->
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Format Kontainer Ekspor:
+              </label>
+              <select id="selectFormat" class="w-full text-xs font-medium p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <option value="auto">Otomatis (Paling Didukung Browser Anda)</option>
+                <option value="webm">WebM (VP9/VP8 - Kompresi Tinggi, Standar Web)</option>
+                <option value="mp4">MP4 (H.264 - Jika didukung oleh browser saat ini)</option>
+              </select>
+              <div id="codecSupportNote" class="text-[11px] text-emerald-600 dark:text-emerald-400">
+                ✓ Codec browser aktif terdeteksi
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Video Trimming (Optional Feature) -->
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
+                </svg>
+                Potong Durasi Video (Trimming Opsional)
+              </label>
+              <span id="trimDurationInfo" class="text-xs font-mono font-medium text-slate-500">Durasi: 00:00 - 00:00 (Penuh)</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label class="block text-[11px] text-slate-500 dark:text-slate-400">Waktu Mulai (Detik):</label>
+                <input type="number" id="trimStart" min="0" step="0.5" value="0" class="w-full text-xs font-mono p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-500 dark:text-slate-400">Waktu Akhir (Detik):</label>
+                <input type="number" id="trimEnd" min="0.5" step="0.5" value="10" class="w-full text-xs font-mono p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compression Summary & Launch Bar -->
+        <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Estimasi Ukuran Hasil:</div>
+            <div class="flex items-baseline gap-2">
+              <span id="estFinalSize" class="text-lg sm:text-xl font-extrabold text-brand-600 dark:text-brand-400">~0 MB</span>
+              <span id="estSavings" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800">
+                Hemat ~55%
+              </span>
+            </div>
+          </div>
+
+          <button id="btnStartCompress" type="button" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-bold text-sm shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+            Mulai Kompres Video Sekarang
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Processing Progress Card (Shown during compression) -->
+      <div id="processingCard" class="hidden glass-card rounded-2xl p-6 border-2 border-brand-500/40 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full border-3 border-brand-500 border-t-transparent animate-spin"></div>
+            <div>
+              <h4 class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100">
+                Sedang Memproses Video...
+              </h4>
+              <p id="processStatusText" class="text-xs text-slate-500 dark:text-slate-400">
+                Mengambil frame dan mengompresi audio/video...
+              </p>
+            </div>
+          </div>
+          <button id="btnCancelProcess" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 transition">
+            Batalkan
+          </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+          <div id="progressBar" class="bg-gradient-to-r from-brand-600 to-purple-600 h-full w-0 transition-all duration-150"></div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
+          <span id="processPercent">0%</span>
+          <span id="processTimeInfo">Waktu: 0s / est tersisa: --s</span>
+        </div>
+
+        <!-- Live canvas preview during compression -->
+        <div class="relative w-full max-w-sm mx-auto aspect-video rounded-xl overflow-hidden bg-black border border-slate-700 shadow-inner">
+          <canvas id="previewCanvas" class="w-full h-full object-contain"></canvas>
+          <div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-white/90">
+            Live Encoding Preview
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Card (Shown after successful compression) -->
+      <div id="resultCard" class="hidden glass-card rounded-2xl p-6 sm:p-8 border-2 border-emerald-500/40 shadow-2xl space-y-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-slate-100">
+              Kompresi Selesai dengan Sukses! 🎉
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Video telah selesai dikompresi langsung di browser Anda. Siap diunduh atau dipratinjau.
+            </p>
+          </div>
+        </div>
+
+        <!-- Compression Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center">
+            <div class="text-xs text-slate-400 font-medium">Ukuran Awal</div>
+            <div id="resOriginalSize" class="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-300 mt-0.5">0 MB</div>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center">
+            <div class="text-xs text-slate-400 font-medium">Ukuran Baru</div>
+            <div id="resNewSize" class="text-base sm:text-lg font-bold text-brand-600 dark:text-brand-400 mt-0.5">0 MB</div>
+          </div>
+          <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
+            <div class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Penghematan Ruang</div>
+            <div id="resSavingsPercent" class="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">0%</div>
+          </div>
+        </div>
+
+        <!-- Video Player Comparison & Preview -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Pratinjau Hasil Video
+            </h4>
+            <div class="flex items-center gap-1.5 text-xs">
+              <button id="btnViewCompressed" class="px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white">Hasil Kompresi</button>
+              <button id="btnViewOriginal" class="px-2.5 py-1 rounded-md font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Video Asli</button>
+            </div>
+          </div>
+
+          <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 shadow-lg">
+            <video id="playerResult" controls class="w-full h-full object-contain"></video>
+            <div id="playerLabel" class="absolute top-2 left-2 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur text-[11px] font-semibold text-brand-400">
+              Menampilkan: Hasil Kompresi
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+          <button id="btnCompressAnother" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs sm:text-sm transition">
+            Kompres Video Lain
+          </button>
+          <a id="btnDownloadCompressed" download="video_compressed.mp4" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download Video Kompresi
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Hidden Offscreen Video & Canvas Elements for Processing -->
+    <video id="offscreenVideo" class="hidden" playsinline muted preload="auto"></video>
+    <canvas id="offscreenCanvas" class="hidden"></canvas>
+
+    <!-- Features & FAQ Info Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold text-sm">
+          🎯
+        </div>
+        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Kualitas Tajam, FPS Turun</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Pilihan khusus untuk menghemat ukuran file tanpa mengorbankan resolusi piksel 1080p/4K. Setiap frame tetap jernih dan tajam.
+        </p>
+      </div>
+
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+          📱
+        </div>
+        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Responsif ke Semua Layar</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Didesain fleksibel untuk perangkat smartphone (Android, iOS Safari), tablet, laptop, dan monitor desktop dengan antarmuka sentuh yang nyaman.
+        </p>
+      </div>
+
+      <div class="glass-card p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+        <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm">
+          🚀
+        </div>
+        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Siap untuk GitHub Pages</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          100% web statis murni tanpa server backend. Cukup unggah repositori ke GitHub dan aktifkan GitHub Pages secara gratis seumur hidup.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- GitHub Pages Deployment Guide Modal -->
+  <div id="ghGuideModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="glass-card max-w-2xl w-full rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-slate-800 dark:text-slate-100">
+              Panduan Deploy ke GitHub Pages
+            </h3>
+            <p class="text-xs text-slate-500">Gratis seumur hidup, tanpa sewa hosting atau server</p>
+          </div>
+        </div>
+        <button id="btnCloseGhGuide" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
+          <div>
+            <strong class="text-slate-800 dark:text-slate-100 block mb-0.5">Ekstrak File ZIP</strong>
+            <p class="text-xs text-slate-500">Ekstrak file ZIP yang sudah diunduh. Anda akan menemukan file <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono">index.html</code> dan <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono">README.md</code>.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">2</span>
+          <div>
+            <strong class="text-slate-800 dark:text-slate-100 block mb-0.5">Buat Repository Baru di GitHub</strong>
+            <p class="text-xs text-slate-500">Buka <a href="https://github.com/new" target="_blank" rel="noopener" class="text-brand-500 underline">github.com/new</a>, beri nama repository (misal: <code class="px-1 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono">video-compressor</code>), set <strong>Public</strong>, lalu klik <strong>Create repository</strong>.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">3</span>
+          <div>
+            <strong class="text-slate-800 dark:text-slate-100 block mb-0.5">Upload File ke Repository</strong>
+            <p class="text-xs text-slate-500">Pilih opsi <em>"uploading an existing file"</em> di GitHub, tarik file <code class="font-mono">index.html</code> ke repository, lalu klik <strong>Commit changes</strong>.</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs shrink-0">4</span>
+          <div>
+            <strong class="text-slate-800 dark:text-slate-100 block mb-0.5">Aktifkan GitHub Pages</strong>
+            <p class="text-xs text-slate-500">Buka menu <strong>Settings</strong> di repository &rarr; klik tab <strong>Pages</strong> di sisi kiri &rarr; pada bagian <em>Branch</em>, pilih <code class="font-mono">main</code> dan folder <code class="font-mono">/ (root)</code> &rarr; klik <strong>Save</strong>.</p>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs">
+          🎉 <strong>Selesai!</strong> Dalam 1-2 menit, website kompresor video Anda sudah live di URL: <code class="font-mono">https://username.github.io/video-compressor/</code> dan bisa diakses dari HP, laptop, maupun desktop mana saja!
+        </div>
+      </div>
+
+      <div class="text-right pt-2">
+        <button id="btnCloseGhGuide2" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs transition hover:bg-slate-300 dark:hover:bg-slate-700">
+          Tutup Panduan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-2xl border border-slate-700 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMessage">Pesan pemberitahuan</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>© VideoSlim - Static Client-Side Video Compressor & FPS Tuner.</p>
+      <div class="flex items-center gap-4">
+        <span>Privasi Aman 100%</span>
+        <span>•</span>
+        <span>Dukungan Mobile & Desktop</span>
+        <span>•</span>
+        <span>Open Source</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    // Global State
+    let currentVideoFile = null;
+    let videoOriginalUrl = null;
+    let videoOriginalMeta = {
+      duration: 0,
+      width: 0,
+      height: 0,
+      sizeBytes: 0,
+      fps: 30
+    };
+    let currentMode = 'fpsOnly'; // 'fpsOnly', 'balanced', 'maxSave', 'custom'
+    let selectedFps = 15;
+    let isProcessing = false;
+    let cancelRequested = false;
+    let compressedVideoUrl = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let processingTimer = null;
+    let startTimeEpoch = 0;
+
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const videoInput = document.getElementById('videoInput');
+    const btnSelectFile = document.getElementById('btnSelectFile');
+    const btnCreateSample = document.getElementById('btnCreateSample');
+    const uploadSection = document.getElementById('uploadSection');
+    const videoDashboard = document.getElementById('videoDashboard');
+    const btnChangeVideo = document.getElementById('btnChangeVideo');
+
+    // Meta Elements
+    const metaFileName = document.getElementById('metaFileName');
+    const metaFileSize = document.getElementById('metaFileSize');
+    const metaResolution = document.getElementById('metaResolution');
+    const metaDuration = document.getElementById('metaDuration');
+    const metaEstFps = document.getElementById('metaEstFps');
+
+    // Mode Tabs
+    const tabFpsOnly = document.getElementById('tabFpsOnly');
+    const tabBalanced = document.getElementById('tabBalanced');
+    const tabMaxSave = document.getElementById('tabMaxSave');
+    const tabCustom = document.getElementById('tabCustom');
+    const panelFpsOnly = document.getElementById('panelFpsOnly');
+    const panelBalanced = document.getElementById('panelBalanced');
+    const panelMaxSave = document.getElementById('panelMaxSave');
+    const customModeIndicator = document.getElementById('customModeIndicator');
+
+    // Controls
+    const fpsPresetBtns = document.querySelectorAll('.fps-preset-btn');
+    const sliderFps = document.getElementById('sliderFps');
+    const valFps = document.getElementById('valFps');
+    const selectResolution = document.getElementById('selectResolution');
+    const valResolution = document.getElementById('valResolution');
+    const targetResPreview = document.getElementById('targetResPreview');
+    const sliderBitrate = document.getElementById('sliderBitrate');
+    const valBitrate = document.getElementById('valBitrate');
+    const selectAudioMode = document.getElementById('selectAudioMode');
+    const selectFormat = document.getElementById('selectFormat');
+    const codecSupportNote = document.getElementById('codecSupportNote');
+    const trimStart = document.getElementById('trimStart');
+    const trimEnd = document.getElementById('trimEnd');
+    const trimDurationInfo = document.getElementById('trimDurationInfo');
+    const estFinalSize = document.getElementById('estFinalSize');
+    const estSavings = document.getElementById('estSavings');
+    const btnStartCompress = document.getElementById('btnStartCompress');
+
+    // Processing Elements
+    const processingCard = document.getElementById('processingCard');
+    const progressBar = document.getElementById('progressBar');
+    const processPercent = document.getElementById('processPercent');
+    const processTimeInfo = document.getElementById('processTimeInfo');
+    const processStatusText = document.getElementById('processStatusText');
+    const btnCancelProcess = document.getElementById('btnCancelProcess');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    // Result Elements
+    const resultCard = document.getElementById('resultCard');
+    const resOriginalSize = document.getElementById('resOriginalSize');
+    const resNewSize = document.getElementById('resNewSize');
+    const resSavingsPercent = document.getElementById('resSavingsPercent');
+    const playerResult = document.getElementById('playerResult');
+    const playerLabel = document.getElementById('playerLabel');
+    const btnViewCompressed = document.getElementById('btnViewCompressed');
+    const btnViewOriginal = document.getElementById('btnViewOriginal');
+    const btnCompressAnother = document.getElementById('btnCompressAnother');
+    const btnDownloadCompressed = document.getElementById('btnDownloadCompressed');
+
+    // Offscreen Elements
+    const offscreenVideo = document.getElementById('offscreenVideo');
+    const offscreenCanvas = document.getElementById('offscreenCanvas');
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    // Guide Modal
+    const ghGuideModal = document.getElementById('ghGuideModal');
+    const btnOpenGhGuide = document.getElementById('btnOpenGhGuide');
+    const btnCloseGhGuide = document.getElementById('btnCloseGhGuide');
+    const btnCloseGhGuide2 = document.getElementById('btnCloseGhGuide2');
+
+    // Toast Function
+    function showToast(msg, icon = 'ℹ️') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+      toastMessage.textContent = msg;
+      toastIcon.textContent = icon;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    // Format Bytes
+    function formatBytes(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+    }
+
+    // Format Seconds to MM:SS
+    function formatTime(sec) {
+      if (!sec || isNaN(sec)) return '00:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    // Dark/Light Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+
+    function initTheme() {
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+          document.documentElement.classList.remove('dark');
+          sunIcon.classList.remove('hidden');
+          moonIcon.classList.add('hidden');
+        } else {
+          document.documentElement.classList.add('dark');
+          sunIcon.classList.add('hidden');
+          moonIcon.classList.remove('hidden');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    }
+    initTheme();
+
+    themeToggle.addEventListener('click', () => {
+      try {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          sunIcon.classList.remove('hidden');
+          moonIcon.classList.add('hidden');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          sunIcon.classList.add('hidden');
+          moonIcon.classList.remove('hidden');
+          localStorage.setItem('theme', 'dark');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // Modal Events
+    btnOpenGhGuide.addEventListener('click', () => ghGuideModal.classList.remove('hidden'));
+    btnCloseGhGuide.addEventListener('click', () => ghGuideModal.classList.add('hidden'));
+    btnCloseGhGuide2.addEventListener('click', () => ghGuideModal.classList.add('hidden'));
+    ghGuideModal.addEventListener('click', (e) => {
+      if (e.target === ghGuideModal) ghGuideModal.classList.add('hidden');
+    });
+
+    // Check Browser Codec Support
+    function checkCodecs() {
+      const types = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+        'video/mp4;codecs=avc1,mp4a',
+        'video/mp4'
+      ];
+      const supported = types.filter(t => MediaRecorder.isTypeSupported(t));
+      if (supported.length > 0) {
+        codecSupportNote.textContent = '✓ Browser mendukung: ' + supported[0].split(';')[0];
+      } else {
+        codecSupportNote.textContent = '⚠ Format default browser digunakan';
+      }
+    }
+    checkCodecs();
+
+    // File Selection Handling
+    btnSelectFile.addEventListener('click', () => videoInput.click());
+    dropZone.addEventListener('click', () => videoInput.click());
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-brand-500', 'bg-brand-50/50', 'dark:bg-brand-950/40');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-brand-500', 'bg-brand-50/50', 'dark:bg-brand-950/40');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length > 0 && files[0].type.startsWith('video/')) {
+        handleVideoFile(files[0]);
+      } else {
+        showToast('Silakan pilih file video yang valid', '⚠️');
+      }
+    });
+
+    videoInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleVideoFile(e.target.files[0]);
+      }
+    });
+
+    btnChangeVideo.addEventListener('click', () => {
+      videoInput.click();
+    });
+
+    // Sample video generation for testing directly without needing a local file
+    btnCreateSample.addEventListener('click', () => {
+      createSampleVideo();
+    });
+
+    function createSampleVideo() {
+      showToast('Membuat video sampel 5 detik...', '⏳');
+      const sampleCanvas = document.createElement('canvas');
+      sampleCanvas.width = 1280;
+      sampleCanvas.height = 720;
+      const sCtx = sampleCanvas.getContext('2d');
+      const stream = sampleCanvas.captureStream(30);
+
+      // Create Web Audio oscillator for sample sound
+      let audioTrack = null;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0.05;
+        osc.connect(gain);
+        const dest = audioCtx.createMediaStreamDestination();
+        gain.connect(dest);
+        osc.start();
+        audioTrack = dest.stream.getAudioTracks()[0];
+      } catch (e) {
+        console.warn('Audio test not supported:', e);
+      }
+
+      if (audioTrack) {
+        stream.addTrack(audioTrack);
+      }
+
+      let mime = 'video/webm';
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) mime = 'video/webm;codecs=vp8';
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      const chunks = [];
+      rec.ondataavailable = e => chunks.push(e.data);
+      rec.onstop = () => {
+        const blob = new Blob(chunks, { type: mime });
+        const sampleFile = new File([blob], 'sample_presentation_test.webm', { type: mime });
+        handleVideoFile(sampleFile);
+        showToast('Video sampel 5 detik siap diuji!', '🎉');
+      };
+
+      rec.start();
+      let frame = 0;
+      const totalFrames = 30 * 5; // 5 seconds
+      const interval = setInterval(() => {
+        frame++;
+        // Draw colorful presentation slide with timer
+        const grad = sCtx.createLinearGradient(0, 0, 1280, 720);
+        grad.addColorStop(0, '#1e1b4b');
+        grad.addColorStop(1, '#312e81');
+        sCtx.fillStyle = grad;
+        sCtx.fillRect(0, 0, 1280, 720);
+
+        // Header
+        sCtx.fillStyle = '#818cf8';
+        sCtx.font = 'bold 44px sans-serif';
+        sCtx.fillText('VideoSlim Sample Video', 80, 120);
+
+        sCtx.fillStyle = '#e0e7ff';
+        sCtx.font = '24px sans-serif';
+        sCtx.fillText('Uji Coba Fitur: Pertahankan Resolusi 100%, Turunkan FPS', 80, 170);
+
+        // Dynamic counter
+        sCtx.fillStyle = '#38bdf8';
+        sCtx.font = 'bold 72px monospace';
+        const sec = (frame / 30).toFixed(2);
+        sCtx.fillText(`Waktu: ${sec}s / Frame: ${frame}`, 80, 300);
+
+        // Moving elements to test frame rate
+        const xPos = 80 + (frame * 5) % 1000;
+        sCtx.fillStyle = '#f43f5e';
+        sCtx.beginPath();
+        sCtx.arc(xPos, 420, 30, 0, Math.PI * 2);
+        sCtx.fill();
+
+        // High detail text to verify sharpness
+        sCtx.fillStyle = '#94a3b8';
+        sCtx.font = '16px monospace';
+        sCtx.fillText('Ketajaman Piksel Tinggi: Perhatikan teks dan tepi lingkaran tetap jernih sempurna!', 80, 520);
+        sCtx.fillText('Resolusi: 1280x720 | Asli: 30 FPS | Coba kompres ke 15 FPS atau 10 FPS.', 80, 560);
+
+        if (frame >= totalFrames) {
+          clearInterval(interval);
+          rec.stop();
+        }
+      }, 1000 / 30);
+    }
+
+    // Load and Parse Video File
+    function handleVideoFile(file) {
+      currentVideoFile = file;
+      if (videoOriginalUrl) {
+        URL.revokeObjectURL(videoOriginalUrl);
+      }
+      videoOriginalUrl = URL.createObjectURL(file);
+      offscreenVideo.src = videoOriginalUrl;
+
+      showToast('Membaca informasi video...', '⏳');
+
+      offscreenVideo.onloadedmetadata = () => {
+        videoOriginalMeta.duration = offscreenVideo.duration || 1;
+        videoOriginalMeta.width = offscreenVideo.videoWidth || 1280;
+        videoOriginalMeta.height = offscreenVideo.videoHeight || 720;
+        videoOriginalMeta.sizeBytes = file.size;
+        videoOriginalMeta.fps = 30; // browser standard default baseline
+
+        // Update Info Display
+        metaFileName.textContent = file.name;
+        metaFileSize.textContent = formatBytes(file.size);
+        metaResolution.textContent = `${videoOriginalMeta.width} x ${videoOriginalMeta.height}`;
+        metaDuration.textContent = formatTime(videoOriginalMeta.duration);
+        metaEstFps.textContent = '~30 FPS';
+
+        // Trim inputs
+        trimStart.max = Math.max(0, videoOriginalMeta.duration - 0.5);
+        trimEnd.max = videoOriginalMeta.duration;
+        trimEnd.value = videoOriginalMeta.duration.toFixed(1);
+        updateTrimInfo();
+
+        // Switch to dashboard
+        uploadSection.classList.add('hidden');
+        videoDashboard.classList.remove('hidden');
+        resultCard.classList.add('hidden');
+        processingCard.classList.add('hidden');
+
+        // Apply mode settings
+        applyMode('fpsOnly');
+        updateCalculations();
+        showToast('Video berhasil dimuat!', '✅');
+      };
+
+      offscreenVideo.onerror = () => {
+        showToast('Gagal memuat video. Format mungkin tidak didukung oleh browser ini.', '❌');
+      };
+    }
+
+    // Trimming info calculation
+    function updateTrimInfo() {
+      const start = parseFloat(trimStart.value) || 0;
+      const end = parseFloat(trimEnd.value) || videoOriginalMeta.duration;
+      const dur = Math.max(0.1, end - start);
+      trimDurationInfo.textContent = `Durasi: ${formatTime(start)} - ${formatTime(end)} (${dur.toFixed(1)}s)`;
+      updateCalculations();
+    }
+    trimStart.addEventListener('input', updateTrimInfo);
+    trimEnd.addEventListener('input', updateTrimInfo);
+
+    // Mode Selector Logic
+    function applyMode(mode) {
+      currentMode = mode;
+      
+      // Update Tab Styles
+      [tabFpsOnly, tabBalanced, tabMaxSave, tabCustom].forEach(tab => {
+        tab.classList.remove('bg-brand-500/10', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300', 'font-bold', 'shadow-sm');
+        tab.classList.add('border-transparent', 'text-slate-600', 'dark:text-slate-400');
+      });
+
+      // Hide all sub panels
+      panelFpsOnly.classList.add('hidden');
+      panelBalanced.classList.add('hidden');
+      panelMaxSave.classList.add('hidden');
+
+      if (mode === 'fpsOnly') {
+        tabFpsOnly.classList.add('bg-brand-500/10', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300', 'font-bold', 'shadow-sm');
+        tabFpsOnly.classList.remove('border-transparent', 'text-slate-600', 'dark:text-slate-400');
+        panelFpsOnly.classList.remove('hidden');
+        customModeIndicator.textContent = '(Mode Turunkan FPS: Resolusi 100% Asli Dipertahankan)';
+
+        // Settings: Keep 100% resolution, select FPS, Bitrate high enough to retain crisp quality
+        selectResolution.value = '1.0';
+        selectResolution.disabled = true;
+        setFpsValue(selectedFps || 15);
+        sliderBitrate.value = 3500; // 3.5 Mbps high quality visual
+        valBitrate.textContent = 'Sangat Tajam (3.5 Mbps)';
+      } else if (mode === 'balanced') {
+        tabBalanced.classList.add('bg-brand-500/10', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300', 'font-bold', 'shadow-sm');
+        tabBalanced.classList.remove('border-transparent', 'text-slate-600', 'dark:text-slate-400');
+        panelBalanced.classList.remove('hidden');
+        customModeIndicator.textContent = '(Mode Seimbang: 720p / 24 FPS)';
+
+        selectResolution.value = '720p';
+        selectResolution.disabled = false;
+        setFpsValue(24);
+        sliderBitrate.value = 1800;
+        valBitrate.textContent = 'Seimbang (1.8 Mbps)';
+      } else if (mode === 'maxSave') {
+        tabMaxSave.classList.add('bg-brand-500/10', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300', 'font-bold', 'shadow-sm');
+        tabMaxSave.classList.remove('border-transparent', 'text-slate-600', 'dark:text-slate-400');
+        panelMaxSave.classList.remove('hidden');
+        customModeIndicator.textContent = '(Mode Hemat Maksimal: 480p / 15 FPS)';
+
+        selectResolution.value = '480p';
+        selectResolution.disabled = false;
+        setFpsValue(15);
+        sliderBitrate.value = 750;
+        valBitrate.textContent = 'Hemat (750 Kbps)';
+      } else if (mode === 'custom') {
+        tabCustom.classList.add('bg-brand-500/10', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300', 'font-bold', 'shadow-sm');
+        tabCustom.classList.remove('border-transparent', 'text-slate-600', 'dark:text-slate-400');
+        customModeIndicator.textContent = '(Semua parameter bebas diatur manual)';
+        selectResolution.disabled = false;
+      }
+
+      updateResolutionLabel();
+      updateCalculations();
+    }
+
+    tabFpsOnly.addEventListener('click', () => applyMode('fpsOnly'));
+    tabBalanced.addEventListener('click', () => applyMode('balanced'));
+    tabMaxSave.addEventListener('click', () => applyMode('maxSave'));
+    tabCustom.addEventListener('click', () => applyMode('custom'));
+
+    // FPS Preset Buttons
+    fpsPresetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        fpsPresetBtns.forEach(b => {
+          b.classList.remove('active-fps', 'border-2', 'border-brand-500', 'bg-brand-50', 'dark:bg-brand-950/40');
+          b.classList.add('border', 'border-slate-300', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-900/60');
+        });
+        btn.classList.add('active-fps', 'border-2', 'border-brand-500', 'bg-brand-50', 'dark:bg-brand-950/40');
+        btn.classList.remove('border-slate-300', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-900/60');
+        
+        const fps = parseInt(btn.dataset.fps);
+        setFpsValue(fps);
+      });
+    });
+
+    function setFpsValue(fps) {
+      selectedFps = fps;
+      sliderFps.value = fps;
+      valFps.textContent = `${fps} FPS`;
+      updateCalculations();
+    }
+
+    sliderFps.addEventListener('input', (e) => {
+      selectedFps = parseInt(e.target.value);
+      valFps.textContent = `${selectedFps} FPS`;
+      updateCalculations();
+    });
+
+    // Resolution Selector
+    function updateResolutionLabel() {
+      const val = selectResolution.value;
+      let targetW = videoOriginalMeta.width;
+      let targetH = videoOriginalMeta.height;
+
+      if (val === '1.0') {
+        valResolution.textContent = '100% (Asli)';
+      } else if (val === '0.75') {
+        targetW = Math.round(videoOriginalMeta.width * 0.75);
+        targetH = Math.round(videoOriginalMeta.height * 0.75);
+        valResolution.textContent = '75%';
+      } else if (val === '0.5') {
+        targetW = Math.round(videoOriginalMeta.width * 0.5);
+        targetH = Math.round(videoOriginalMeta.height * 0.5);
+        valResolution.textContent = '50%';
+      } else if (val === '720p') {
+        if (targetH > 720) {
+          targetW = Math.round(targetW * (720 / targetH));
+          targetH = 720;
+        }
+        valResolution.textContent = 'Maks 720p';
+      } else if (val === '480p') {
+        if (targetH > 480) {
+          targetW = Math.round(targetW * (480 / targetH));
+          targetH = 480;
+        }
+        valResolution.textContent = 'Maks 480p';
+      } else if (val === '360p') {
+        if (targetH > 360) {
+          targetW = Math.round(targetW * (360 / targetH));
+          targetH = 360;
+        }
+        valResolution.textContent = 'Maks 360p';
+      }
+
+      // Ensure even dimensions for codecs
+      if (targetW % 2 !== 0) targetW--;
+      if (targetH % 2 !== 0) targetH--;
+
+      targetResPreview.textContent = `Target: ${targetW} x ${targetH} piksel`;
+    }
+
+    selectResolution.addEventListener('change', () => {
+      updateResolutionLabel();
+      updateCalculations();
+    });
+
+    // Bitrate Slider
+    sliderBitrate.addEventListener('input', (e) => {
+      const kbps = parseInt(e.target.value);
+      if (kbps >= 1000) {
+        valBitrate.textContent = `${(kbps / 1000).toFixed(1)} Mbps`;
+      } else {
+        valBitrate.textContent = `${kbps} Kbps`;
+      }
+      updateCalculations();
+    });
+
+    selectAudioMode.addEventListener('change', updateCalculations);
+
+    // Dynamic Size & Savings Estimation
+    function updateCalculations() {
+      if (!currentVideoFile || !videoOriginalMeta.duration) return;
+
+      const start = parseFloat(trimStart.value) || 0;
+      const end = parseFloat(trimEnd.value) || videoOriginalMeta.duration;
+      const effectiveDuration = Math.max(0.5, end - start);
+
+      const targetFpsVal = parseInt(sliderFps.value) || 15;
+      const targetBitrateKbps = parseInt(sliderBitrate.value) || 2500;
+      const isMute = selectAudioMode.value === 'mute';
+
+      // Estimate total bitrate:
+      // Video bitrate + audio bitrate (~128kbps or 0 if mute)
+      const audioBitrateKbps = isMute ? 0 : 128;
+      
+      // If Turunkan FPS Saja, fps ratio directly scales data density:
+      let estimatedBitsPerSec = (targetBitrateKbps * 1000) * (targetFpsVal / 30);
+      if (estimatedBitsPerSec < 200000) estimatedBitsPerSec = 200000;
+      
+      const totalBitrateBps = estimatedBitsPerSec + (audioBitrateKbps * 1000);
+      let estimatedBytes = (totalBitrateBps / 8) * effectiveDuration;
+
+      // Ensure estimate doesn't unrealistically exceed original if trimming is full
+      if (effectiveDuration >= videoOriginalMeta.duration && estimatedBytes > videoOriginalMeta.sizeBytes * 0.95) {
+        estimatedBytes = videoOriginalMeta.sizeBytes * 0.85;
+      }
+
+      const savingsPct = Math.max(0, Math.round(((videoOriginalMeta.sizeBytes - estimatedBytes) / videoOriginalMeta.sizeBytes) * 100));
+
+      estFinalSize.textContent = `~${formatBytes(estimatedBytes)}`;
+      estSavings.textContent = `Hemat ~${savingsPct}%`;
+    }
+
+    // Main Compression Process
+    btnStartCompress.addEventListener('click', async () => {
+      if (isProcessing) return;
+      startCompression();
+    });
+
+    btnCancelProcess.addEventListener('click', () => {
+      if (isProcessing) {
+        cancelRequested = true;
+        processStatusText.textContent = 'Membatalkan proses kompresi...';
+      }
+    });
+
+    async function startCompression() {
+      isProcessing = true;
+      cancelRequested = false;
+      recordedChunks = [];
+
+      processingCard.classList.remove('hidden');
+      resultCard.classList.add('hidden');
+      btnStartCompress.disabled = true;
+      progressBar.style.width = '0%';
+      processPercent.textContent = '0%';
+      processStatusText.textContent = 'Menginisialisasi canvas dan stream...';
+
+      // Scroll to processing card
+      processingCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Determine Target Dimensions
+      const resVal = selectResolution.value;
+      let targetW = videoOriginalMeta.width;
+      let targetH = videoOriginalMeta.height;
+
+      if (resVal === '0.75') {
+        targetW = Math.round(targetW * 0.75);
+        targetH = Math.round(targetH * 0.75);
+      } else if (resVal === '0.5') {
+        targetW = Math.round(targetW * 0.5);
+        targetH = Math.round(targetH * 0.5);
+      } else if (resVal === '720p' && targetH > 720) {
+        targetW = Math.round(targetW * (720 / targetH));
+        targetH = 720;
+      } else if (resVal === '480p' && targetH > 480) {
+        targetW = Math.round(targetW * (480 / targetH));
+        targetH = 480;
+      } else if (resVal === '360p' && targetH > 360) {
+        targetW = Math.round(targetW * (360 / targetH));
+        targetH = 360;
+      }
+      if (targetW % 2 !== 0) targetW--;
+      if (targetH % 2 !== 0) targetH--;
+
+      offscreenCanvas.width = targetW;
+      offscreenCanvas.height = targetH;
+      previewCanvas.width = targetW;
+      previewCanvas.height = targetH;
+
+      const targetFpsVal = parseInt(sliderFps.value) || 15;
+      const targetBitrateKbps = parseInt(sliderBitrate.value) || 2500;
+      const isMute = selectAudioMode.value === 'mute';
+
+      const startTime = parseFloat(trimStart.value) || 0;
+      const endTime = parseFloat(trimEnd.value) || videoOriginalMeta.duration;
+      const duration = Math.max(0.5, endTime - startTime);
+
+      // Create Canvas Stream with target FPS!
+      const canvasStream = offscreenCanvas.captureStream(targetFpsVal);
+      const combinedTracks = [...canvasStream.getVideoTracks()];
+
+      // Audio handling via captureStream or Web Audio
+      let audioTrack = null;
+      let audioCtx = null;
+      if (!isMute) {
+        try {
+          // Attempt direct audio capture from video element
+          const vStream = offscreenVideo.captureStream ? offscreenVideo.captureStream() : (offscreenVideo.mozCaptureStream ? offscreenVideo.mozCaptureStream() : null);
+          if (vStream && vStream.getAudioTracks().length > 0) {
+            audioTrack = vStream.getAudioTracks()[0];
+          }
+        } catch (e) {
+          console.warn('Direct stream capture fallback:', e);
+        }
+
+        if (!audioTrack) {
+          try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(offscreenVideo);
+            const dest = audioCtx.createMediaStreamDestination();
+            source.connect(dest);
+            // Notice: do NOT connect to audioCtx.destination so audio stays muted to user during compression!
+            audioTrack = dest.stream.getAudioTracks()[0];
+          } catch (e) {
+            console.warn('AudioContext fallback warning:', e);
+          }
+        }
+
+        if (audioTrack) {
+          combinedTracks.push(audioTrack);
+        }
+      }
+
+      const outputStream = new MediaStream(combinedTracks);
+
+      // Pick MIME Type
+      let selectedMime = 'video/webm';
+      const userFmt = selectFormat.value;
+      if (userFmt === 'mp4' && MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a')) {
+        selectedMime = 'video/mp4;codecs=avc1,mp4a';
+      } else if (userFmt === 'mp4' && MediaRecorder.isTypeSupported('video/mp4')) {
+        selectedMime = 'video/mp4';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        selectedMime = 'video/webm;codecs=vp9,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        selectedMime = 'video/webm;codecs=vp8,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        selectedMime = 'video/webm';
+      }
+
+      const recorderOptions = {
+        mimeType: selectedMime,
+        videoBitsPerSecond: targetBitrateKbps * 1000
+      };
+
+      try {
+        mediaRecorder = new MediaRecorder(outputStream, recorderOptions);
+      } catch (e) {
+        // Fallback without bitrate constraint
+        mediaRecorder = new MediaRecorder(outputStream);
+      }
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        cleanupAfterRecording(selectedMime, isMute);
+      };
+
+      // Start recording
+      mediaRecorder.start(250); // flush chunks every 250ms
+
+      offscreenVideo.currentTime = startTime;
+      offscreenVideo.muted = false; // ensure audio feeds into context
+
+      try {
+        await offscreenVideo.play();
+      } catch (err) {
+        console.warn('Play error:', err);
+      }
+
+      startTimeEpoch = Date.now();
+      const frameIntervalMs = 1000 / targetFpsVal;
+      let lastDrawTime = 0;
+
+      processStatusText.textContent = `Mengompres pada ${targetFpsVal} FPS (${targetW}x${targetH})...`;
+
+      function renderLoop(now) {
+        if (cancelRequested) {
+          stopProcessCancelled();
+          return;
+        }
+
+        if (offscreenVideo.currentTime >= endTime || offscreenVideo.ended) {
+          // Finished!
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          }
+          offscreenVideo.pause();
+          return;
+        }
+
+        // Draw at target FPS pacing
+        if (now - lastDrawTime >= frameIntervalMs - 2) {
+          lastDrawTime = now;
+          // High quality smoothing
+          offscreenCtx.imageSmoothingEnabled = true;
+          offscreenCtx.imageSmoothingQuality = 'high';
+          offscreenCtx.drawImage(offscreenVideo, 0, 0, targetW, targetH);
+
+          // Copy to live mini-preview
+          previewCtx.drawImage(offscreenCanvas, 0, 0, targetW, targetH);
+        }
+
+        // Progress Calculation
+        const currentElapsed = Math.max(0, offscreenVideo.currentTime - startTime);
+        const pct = Math.min(99, Math.round((currentElapsed / duration) * 100));
+        progressBar.style.width = `${pct}%`;
+        processPercent.textContent = `${pct}%`;
+
+        const timeSpentSec = (Date.now() - startTimeEpoch) / 1000;
+        const estTotalSec = (timeSpentSec / Math.max(0.01, pct)) * 100;
+        const remainingSec = Math.max(0, estTotalSec - timeSpentSec).toFixed(0);
+        processTimeInfo.textContent = `Berjalan: ${timeSpentSec.toFixed(0)}s | Sisa: ~${remainingSec}s`;
+
+        requestAnimationFrame(renderLoop);
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    function stopProcessCancelled() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      offscreenVideo.pause();
+      isProcessing = false;
+      processingCard.classList.add('hidden');
+      btnStartCompress.disabled = false;
+      showToast('Kompresi dibatalkan oleh pengguna', 'ℹ️');
+    }
+
+    function cleanupAfterRecording(mimeType, isMute) {
+      isProcessing = false;
+      btnStartCompress.disabled = false;
+      processingCard.classList.add('hidden');
+
+      if (cancelRequested) return;
+
+      const blob = new Blob(recordedChunks, { type: mimeType });
+      if (compressedVideoUrl) {
+        URL.revokeObjectURL(compressedVideoUrl);
+      }
+      compressedVideoUrl = URL.createObjectURL(blob);
+
+      // Determine extension
+      const isMp4 = mimeType.includes('mp4');
+      const ext = isMp4 ? 'mp4' : 'webm';
+      const originalBaseName = currentVideoFile.name.replace(/\.[^/.]+$/, '');
+      const downloadName = `${originalBaseName}_compressed_${selectedFps}fps.${ext}`;
+
+      // Show Results
+      resOriginalSize.textContent = formatBytes(currentVideoFile.size);
+      resNewSize.textContent = formatBytes(blob.size);
+
+      const savedBytes = currentVideoFile.size - blob.size;
+      const pct = ((savedBytes / currentVideoFile.size) * 100).toFixed(1);
+      resSavingsPercent.textContent = `${pct > 0 ? '-' + pct : '+' + Math.abs(pct)}%`;
+
+      // Set Download Link
+      btnDownloadCompressed.href = compressedVideoUrl;
+      btnDownloadCompressed.download = downloadName;
+
+      // Set Player
+      playerResult.src = compressedVideoUrl;
+      playerLabel.textContent = `Menampilkan: Hasil Kompresi (${formatBytes(blob.size)}, ${selectedFps} FPS)`;
+      btnViewCompressed.classList.replace('bg-slate-200', 'bg-brand-600');
+      btnViewCompressed.classList.replace('dark:bg-slate-800', 'bg-brand-600');
+      btnViewCompressed.classList.add('text-white');
+      btnViewOriginal.classList.remove('bg-brand-600', 'text-white');
+      btnViewOriginal.classList.add('bg-slate-200', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+
+      resultCard.classList.remove('hidden');
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('Video berhasil dikompresi!', '🎉');
+    }
+
+    // Toggle Preview between Original & Compressed
+    btnViewCompressed.addEventListener('click', () => {
+      if (!compressedVideoUrl) return;
+      playerResult.src = compressedVideoUrl;
+      playerResult.play();
+      playerLabel.textContent = 'Menampilkan: Hasil Kompresi';
+      btnViewCompressed.className = 'px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white';
+      btnViewOriginal.className = 'px-2.5 py-1 rounded-md font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+    });
+
+    btnViewOriginal.addEventListener('click', () => {
+      if (!videoOriginalUrl) return;
+      playerResult.src = videoOriginalUrl;
+      playerResult.play();
+      playerLabel.textContent = 'Menampilkan: Video Asli';
+      btnViewOriginal.className = 'px-2.5 py-1 rounded-md font-semibold bg-brand-600 text-white';
+      btnViewCompressed.className = 'px-2.5 py-1 rounded-md font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+    });
+
+    btnCompressAnother.addEventListener('click', () => {
+      resultCard.classList.add('hidden');
+      uploadSection.classList.remove('hidden');
+      videoDashboard.classList.add('hidden');
+      videoInput.value = '';
+    });
+  </script>
+</body>
+</html>
