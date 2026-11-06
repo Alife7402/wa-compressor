@@ -2,16 +2,16 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>WhatsApp 30 FPS Video Compressor - 100% Client Side</title>
 
-  <!-- 1. Cross-Origin Isolation Service Worker (Wajib untuk GitHub Pages & SharedArrayBuffer) -->
+  <!-- 1. Cross-Origin Isolation Service Worker (GitHub Pages & SharedArrayBuffer) -->
   <script src="coi-serviceworker.js"></script>
 
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,54 +39,48 @@
     }
   </script>
 
-  <!-- FFmpeg.wasm UMD Bundles via CDN (unpkg) -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-  <script src="https://unpkg.com/@ffmpeg/util@0.12.10/dist/umd/index.js"></script>
-
   <style>
     /* Custom scrollbars */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0f172a;
+      background: #090d16;
     }
     ::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
+      background: #253347;
+      border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+      background: #384b66;
     }
 
-    /* Glow animation */
-    @keyframes pulse-subtle {
-      0%, 100% { opacity: 0.7; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.02); }
-    }
-    .animate-glow {
-      animation: pulse-subtle 4s infinite ease-in-out;
+    /* Prevent mobile tap highlight */
+    * {
+      -webkit-tap-highlight-color: transparent;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 overflow-x-hidden">
 
   <!-- Top Notification: Cross-Origin Isolation Fallback Check -->
-  <div id="coi-alert-banner" class="hidden bg-amber-950/80 border-b border-amber-500/40 text-amber-200 px-4 py-3 text-xs md:text-sm">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div id="coi-alert-banner" class="hidden bg-amber-950/90 border-b border-amber-500/40 text-amber-200 px-3 sm:px-4 py-2.5 text-xs sm:text-sm">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2 min-w-0">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
         </svg>
-        <span><strong>Perhatian:</strong> Service Worker membutuhkan satu kali refresh pertama kali agar akselerasi WebAssembly multi-threading aktif di GitHub Pages.</span>
+        <span class="leading-tight text-xs sm:text-sm">
+          <strong>Perhatian:</strong> Refresh halaman jika Service Worker baru pertama kali aktif untuk akselerasi multi-thread.
+        </span>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="location.reload()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5 shadow-sm">
+      <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+        <button onclick="location.reload()" class="min-h-[36px] bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5 shadow-sm active:scale-95">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Muat Ulang Halaman
+          Refresh Halaman
         </button>
-        <button onclick="document.getElementById('coi-alert-banner').remove()" class="text-amber-400 hover:text-amber-200 p-1">
+        <button onclick="document.getElementById('coi-alert-banner').remove()" class="p-1.5 text-amber-400 hover:text-amber-200">
           ✕
         </button>
       </div>
@@ -94,57 +88,61 @@
   </div>
 
   <!-- Header -->
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 01-5.82 2.41h-.01c-1.49 0-2.96-.4-4.24-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 01-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24"/>
           </svg>
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h1 class="text-sm sm:text-base md:text-lg font-bold tracking-tight text-white truncate">
               WhatsApp 30 FPS <span class="text-emerald-400">Compressor</span>
             </h1>
-            <span class="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">30 FPS Lock</span>
+            <span class="text-[9px] sm:text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">Lock 30 FPS</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">Video Status & Chat Mulus Tanpa Patah-patah • 100% Client-Side</p>
+          <p class="text-[11px] text-slate-400 hidden sm:block truncate">Status Mulus Tanpa Patah-patah • 100% Client-Side WebAssembly</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Header Actions -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <!-- COI Status Indicator Badge -->
-        <div id="coi-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-800/80 border-slate-700 text-slate-400">
+        <div id="coi-badge" class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium border bg-slate-800/80 border-slate-700 text-slate-400">
           <span class="w-2 h-2 rounded-full bg-slate-500"></span>
-          <span class="text-[11px]" id="coi-status-text">Memeriksa COI...</span>
+          <span class="hidden xs:inline text-[10px] sm:text-[11px]" id="coi-status-text">Memeriksa COI...</span>
         </div>
 
-        <!-- Info / GH Pages Deploy Guide Modal Trigger -->
-        <button id="btn-open-guide" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition duration-150 flex items-center gap-1.5">
+        <!-- Panduan Deploy Button -->
+        <button id="btn-open-guide" class="min-h-[36px] text-xs bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-300 px-2.5 sm:px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span class="hidden sm:inline">Panduan Deploy</span>
         </button>
       </div>
+
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-8">
+  <main class="flex-grow max-w-5xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
 
     <!-- Hero / Explanation Banner -->
-    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800/80 border border-slate-800 p-6 md:p-8">
+    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800/80 border border-slate-800 p-4 sm:p-6 md:p-8">
       <div class="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="max-w-2xl relative z-10 space-y-3">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+      <div class="max-w-2xl relative z-10 space-y-2 sm:space-y-3">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] sm:text-xs font-semibold">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          Privasi Terjamin: Video tidak diunggah ke server mana pun
+          Privasi 100% Aman: Diproses Langsung di Browser Anda
         </div>
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-          Kenapa Video WhatsApp Anda Sering <span class="text-emerald-400">Patah-Patah?</span>
+        <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
+          Kenapa Video WhatsApp Sering <span class="text-emerald-400">Patah-Patah?</span>
         </h2>
-        <p class="text-sm text-slate-300 leading-relaxed">
-          WhatsApp secara otomatis merusak video 60 FPS menggunakan algoritma kompresi internal yang membuang frame secara acak. Solusinya: Kunci video ke <strong class="text-emerald-300">30 FPS konstan</strong> dengan encoder <strong class="text-white">x264 faststart</strong> sebelum diunggah agar status Anda sejernih kristal dan berputar mulus di iPhone maupun Android!
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Algoritma kompresi WhatsApp otomatis memotong frame video 60 FPS secara acak. Kunci video Anda ke <strong class="text-emerald-300">30 FPS konstan</strong> dengan encoder <strong class="text-white">H.264 FastStart</strong> agar video status sejernih aslinya dan berputar mulus tanpa lag di Android maupun iPhone!
         </p>
       </div>
     </section>
@@ -156,90 +154,90 @@
       <section id="upload-section" class="relative group">
         <input type="file" id="file-input" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.webm" class="hidden">
         
-        <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 bg-slate-900/60 hover:bg-slate-900/90 rounded-2xl p-8 sm:p-12 text-center transition duration-200 cursor-pointer flex flex-col items-center justify-center space-y-4 shadow-inner">
-          <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500/20 transition duration-200">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 active:border-emerald-500 bg-slate-900/60 hover:bg-slate-900/90 rounded-2xl p-6 sm:p-10 md:p-12 text-center transition duration-200 cursor-pointer flex flex-col items-center justify-center space-y-3 sm:space-y-4 shadow-inner">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition duration-200 shrink-0">
+            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
           </div>
           <div class="space-y-1">
-            <p class="text-base sm:text-lg font-semibold text-white">Tarik & Lepas Video Anda ke Sini</p>
-            <p class="text-xs sm:text-sm text-slate-400">Atau klik untuk memilih file dari galeri / komputer</p>
+            <p class="text-sm sm:text-base md:text-lg font-semibold text-white">Pilih atau Tarik Video ke Sini</p>
+            <p class="text-xs sm:text-sm text-slate-400">Klik di sini untuk membuka galeri / file penyimpanan</p>
           </div>
-          <div class="flex items-center gap-2 text-[11px] text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60">
-            <span class="font-medium text-slate-300">Format yang didukung:</span>
+          <div class="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60">
+            <span class="font-medium text-slate-300">Format:</span>
             <span>MP4, MOV (iPhone), MKV, WebM</span>
           </div>
         </div>
       </section>
 
       <!-- Video Details & Configuration Panel (Hidden initially) -->
-      <section id="config-section" class="hidden space-y-6 animate-fade-in">
+      <section id="config-section" class="hidden space-y-5 sm:space-y-6">
 
         <!-- Source Video Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
-            <div class="flex items-center gap-3 overflow-hidden">
+            <div class="flex items-center gap-3 overflow-hidden min-w-0 w-full sm:w-auto">
               <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               </div>
-              <div class="truncate">
-                <h3 id="video-filename" class="text-sm sm:text-base font-bold text-white truncate">nama-video.mp4</h3>
-                <p id="video-meta-summary" class="text-xs text-slate-400">Memuat metadata...</p>
+              <div class="min-w-0 flex-1">
+                <h3 id="video-filename" class="text-sm sm:text-base font-bold text-white truncate break-all">nama-video.mp4</h3>
+                <p id="video-meta-summary" class="text-xs text-slate-400 truncate">Memuat metadata...</p>
               </div>
             </div>
-            <button id="btn-change-file" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700/60 hover:bg-slate-800 transition">
+            <button id="btn-change-file" class="min-h-[44px] w-full sm:w-auto text-xs text-slate-300 hover:text-white px-4 py-2 rounded-xl border border-slate-700/80 hover:bg-slate-800 transition text-center shrink-0">
               Ganti Video
             </button>
           </div>
 
-          <!-- Metadata Badges Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
-              <span class="text-slate-400 block mb-1">Ukuran Asli</span>
-              <span id="meta-size" class="text-sm font-semibold text-white">0 MB</span>
+          <!-- Metadata Badges Grid (Responsive 2x2 on Mobile, 4-col on Desktop) -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 min-w-0">
+              <span class="text-slate-400 block mb-1 text-[11px]">Ukuran Asli</span>
+              <span id="meta-size" class="text-xs sm:text-sm font-semibold text-white truncate block">0 MB</span>
             </div>
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
-              <span class="text-slate-400 block mb-1">Durasi</span>
-              <span id="meta-duration" class="text-sm font-semibold text-white">00:00</span>
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 min-w-0">
+              <span class="text-slate-400 block mb-1 text-[11px]">Durasi</span>
+              <span id="meta-duration" class="text-xs sm:text-sm font-semibold text-white truncate block">00:00</span>
             </div>
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
-              <span class="text-slate-400 block mb-1">Resolusi</span>
-              <span id="meta-resolution" class="text-sm font-semibold text-white">0 × 0</span>
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 min-w-0">
+              <span class="text-slate-400 block mb-1 text-[11px]">Resolusi</span>
+              <span id="meta-resolution" class="text-xs sm:text-sm font-semibold text-white truncate block">0 × 0</span>
             </div>
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
-              <span class="text-slate-400 block mb-1">Target Framerate</span>
-              <span class="text-sm font-semibold text-emerald-400 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                Lock 30.0 FPS
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 min-w-0">
+              <span class="text-slate-400 block mb-1 text-[11px]">Framerate Target</span>
+              <span class="text-xs sm:text-sm font-semibold text-emerald-400 flex items-center gap-1.5 truncate">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                Lock 30 FPS
               </span>
             </div>
           </div>
 
           <!-- Video Source Preview Player -->
-          <div class="rounded-xl overflow-hidden bg-black/60 border border-slate-800 max-h-64 flex justify-center">
-            <video id="input-preview-video" class="max-h-64 w-auto rounded-lg" controls playsinline></video>
+          <div class="rounded-xl overflow-hidden bg-black/60 border border-slate-800 max-h-72 flex justify-center items-center">
+            <video id="input-preview-video" class="max-h-72 w-full object-contain rounded-lg" controls playsinline></video>
           </div>
         </div>
 
-        <!-- Compression Presets Selection -->
+        <!-- Compression Presets Selection (1-col mobile, 2-col desktop) -->
         <div class="space-y-3">
-          <label class="text-sm font-semibold text-slate-200 block">Pilih Preset Kompresi WhatsApp:</label>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="text-xs sm:text-sm font-semibold text-slate-200 block">Pilih Preset Kompresi WhatsApp:</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             
             <!-- Preset 1: HD Smooth -->
-            <div id="card-preset-hd" onclick="selectPreset('hd')" class="cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40">
-              <div class="flex items-start justify-between mb-3">
+            <div id="card-preset-hd" class="cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-4 sm:p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40 select-none">
+              <div class="flex items-start justify-between mb-2 sm:mb-3">
                 <div class="flex items-center gap-2">
-                  <span class="w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold" id="radio-hd-icon">✓</span>
-                  <h4 class="font-bold text-white text-base">HD Smooth (Rekomendasi)</h4>
+                  <span class="w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0" id="radio-hd-icon">✓</span>
+                  <h4 class="font-bold text-white text-sm sm:text-base">HD Smooth (Rekomendasi)</h4>
                 </div>
-                <span class="text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">Kualitas Tajam</span>
+                <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">Kualitas Tajam</span>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed mb-4">
-                Sangat ideal untuk video estetik, vlog, dan konser. Mempertahankan ketajaman visual tinggi dengan pergerakan frame 30 FPS yang sangat halus di status WhatsApp.
+              <p class="text-xs text-slate-300 leading-relaxed mb-3 sm:mb-4">
+                Sangat ideal untuk vlog, video sinematik, dan konser. Mengunci 30 FPS dengan ketajaman visual tinggi tanpa patah-patah di WhatsApp Status.
               </p>
-              <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+              <div class="grid grid-cols-2 gap-2 text-[10px] sm:text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                 <div><span class="text-slate-400">Framerate:</span> <strong class="text-emerald-400">30 FPS Lock</strong></div>
                 <div><span class="text-slate-400">Resolusi:</span> <strong class="text-slate-200">Maks. 1080p</strong></div>
                 <div><span class="text-slate-400">Taraf CRF:</span> <strong class="text-slate-200">20 (High Fidelity)</strong></div>
@@ -248,18 +246,18 @@
             </div>
 
             <!-- Preset 2: Hemat Data -->
-            <div id="card-preset-data" onclick="selectPreset('data')" class="cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-5 transition duration-150 relative">
-              <div class="flex items-start justify-between mb-3">
+            <div id="card-preset-data" class="cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-4 sm:p-5 transition duration-150 relative select-none">
+              <div class="flex items-start justify-between mb-2 sm:mb-3">
                 <div class="flex items-center gap-2">
-                  <span class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold" id="radio-data-icon"></span>
-                  <h4 class="font-bold text-slate-200 text-base">Hemat Data (Cepat & Ringan)</h4>
+                  <span class="w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0" id="radio-data-icon"></span>
+                  <h4 class="font-bold text-slate-200 text-sm sm:text-base">Hemat Data (Cepat & Ringan)</h4>
                 </div>
-                <span class="text-[10px] font-semibold uppercase tracking-wider bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-full">Kecil & Irit</span>
+                <span class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-full shrink-0">Kecil & Irit</span>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed mb-4">
-                Sangat pas untuk video dokumentasi harian, chat grup, atau saat kuota terbatas. Skala ke 720p dengan ukuran file yang jauh lebih mungil tanpa pecah.
+              <p class="text-xs text-slate-300 leading-relaxed mb-3 sm:mb-4">
+                Cocok untuk video harian atau chat grup. Skala otomatis ke 720p dengan ukuran file yang jauh lebih mungil dan hemat kuota penerima.
               </p>
-              <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+              <div class="grid grid-cols-2 gap-2 text-[10px] sm:text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                 <div><span class="text-slate-400">Framerate:</span> <strong class="text-emerald-400">30 FPS Lock</strong></div>
                 <div><span class="text-slate-400">Resolusi:</span> <strong class="text-slate-200">Scale 720p</strong></div>
                 <div><span class="text-slate-400">Taraf CRF:</span> <strong class="text-slate-200">23 (Standard)</strong></div>
@@ -270,9 +268,9 @@
           </div>
         </div>
 
-        <!-- Start Compression Button -->
+        <!-- Start Compression Button (Min height 48px for thumb friendly touch) -->
         <div class="pt-2">
-          <button id="btn-start-process" class="w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-bold py-4 px-6 rounded-2xl transition duration-150 shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 text-base">
+          <button id="btn-start-process" class="w-full min-h-[50px] bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-[0.99] text-slate-950 font-bold py-3.5 px-6 rounded-2xl transition duration-150 shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 text-sm sm:text-base">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Mulai Kompresi Video (30 FPS Lock)</span>
           </button>
@@ -280,90 +278,90 @@
       </section>
 
       <!-- Processing & Progress Section (Hidden initially) -->
-      <section id="process-section" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 animate-fade-in">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center animate-spin">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <section id="process-section" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-4 sm:space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 gap-2">
+          <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </div>
-            <div>
-              <h3 class="text-sm sm:text-base font-bold text-white" id="process-status-heading">Sedang Memproses Video...</h3>
-              <p class="text-xs text-slate-400" id="process-status-detail">Inisialisasi modul WebAssembly...</p>
+            <div class="min-w-0">
+              <h3 class="text-xs sm:text-sm md:text-base font-bold text-white truncate" id="process-status-heading">Sedang Memproses Video...</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 truncate" id="process-status-detail">Inisialisasi modul WebAssembly...</p>
             </div>
           </div>
-          <span id="process-percentage" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono">0%</span>
+          <span id="process-percentage" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono shrink-0">0%</span>
         </div>
 
         <!-- Progress Bar Visual -->
         <div class="space-y-2">
-          <div class="w-full bg-slate-950 rounded-full h-3.5 p-0.5 overflow-hidden border border-slate-800">
+          <div class="w-full bg-slate-950 rounded-full h-3 sm:h-3.5 p-0.5 overflow-hidden border border-slate-800">
             <div id="progress-bar-fill" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-200 ease-out" style="width: 0%"></div>
           </div>
-          <div class="flex justify-between text-[11px] text-slate-400 font-mono">
-            <span id="process-time-elapsed">Waktu Berjalan: 00:00</span>
-            <span id="process-speed-info">Mode: x264 Fast (fps=30)</span>
+          <div class="flex justify-between text-[10px] sm:text-[11px] text-slate-400 font-mono">
+            <span id="process-time-elapsed">Waktu: 00:00</span>
+            <span id="process-speed-info">Mode: x264 (fps=30)</span>
           </div>
         </div>
 
         <!-- Step Indicators -->
-        <div class="grid grid-cols-3 gap-2 text-center text-xs">
-          <div id="step-1" class="py-2 px-3 rounded-xl bg-slate-800/80 border border-emerald-500/40 text-emerald-300 font-medium">
+        <div class="grid grid-cols-3 gap-2 text-center text-[10px] sm:text-xs font-medium">
+          <div id="step-1" class="py-2 px-1 sm:px-3 rounded-xl bg-slate-800/80 border border-emerald-500/40 text-emerald-300">
             1. Engine Ready
           </div>
-          <div id="step-2" class="py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
-            2. Transcoding 30 FPS
+          <div id="step-2" class="py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+            2. Transcode 30 FPS
           </div>
-          <div id="step-3" class="py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
-            3. FastStart Output
+          <div id="step-3" class="py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400">
+            3. FastStart MOOV
           </div>
         </div>
 
         <!-- Terminal Logs (Collapsible) -->
         <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
-          <button id="toggle-logs-btn" class="w-full px-4 py-2 bg-slate-900/80 hover:bg-slate-900 text-left text-xs font-mono text-slate-400 flex items-center justify-between border-b border-slate-800">
+          <button id="toggle-logs-btn" class="w-full px-3 sm:px-4 py-2.5 bg-slate-900/80 hover:bg-slate-900 text-left text-xs font-mono text-slate-400 flex items-center justify-between border-b border-slate-800">
             <span class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Console Output FFmpeg.wasm
+              Console Log FFmpeg.wasm
             </span>
             <span id="toggle-logs-icon" class="text-slate-500 text-xs">▼ Buka Log</span>
           </button>
-          <div id="logs-container" class="hidden p-3 font-mono text-[11px] text-slate-400 h-36 overflow-y-auto space-y-1">
+          <div id="logs-container" class="hidden p-3 font-mono text-[10px] text-slate-400 h-36 overflow-y-auto space-y-1">
             <div class="text-slate-500">// Menunggu proses transcode dimulai...</div>
           </div>
         </div>
       </section>
 
       <!-- Output & Results Section (Hidden initially) -->
-      <section id="result-section" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6 animate-fade-in">
+      <section id="result-section" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-5 sm:space-y-6">
         
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 gap-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shrink-0">
               ✓
             </div>
-            <div>
-              <h3 class="text-base sm:text-lg font-bold text-white">Kompresi Selesai dengan Sempurna!</h3>
-              <p class="text-xs text-slate-400">Video Anda kini siap dikirim atau dijadikan WhatsApp Status tanpa lag.</p>
+            <div class="min-w-0">
+              <h3 class="text-sm sm:text-base md:text-lg font-bold text-white truncate">Kompresi Selesai!</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 truncate">Video terkunci di 30 FPS dan siap dikirim ke WhatsApp.</p>
             </div>
           </div>
-          <span id="reduction-badge" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full">
+          <span id="reduction-badge" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full shrink-0">
             -0% Lebih Ringan
           </span>
         </div>
 
-        <!-- Before vs After Comparison Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-center">
-            <span class="text-xs text-slate-400 block mb-1">Ukuran Awal</span>
-            <span id="res-original-size" class="text-base sm:text-lg font-bold text-slate-300">0 MB</span>
+        <!-- Before vs After Comparison Grid (1-col mobile, 3-col laptop/desktop) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 text-center min-w-0">
+            <span class="text-[11px] text-slate-400 block mb-1">Ukuran Asli</span>
+            <span id="res-original-size" class="text-sm sm:text-base font-bold text-slate-300">0 MB</span>
           </div>
-          <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-4 text-center">
-            <span class="text-xs text-emerald-400 block mb-1">Ukuran Hasil Kompresi</span>
-            <span id="res-compressed-size" class="text-base sm:text-lg font-extrabold text-emerald-400">0 MB</span>
+          <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3.5 text-center min-w-0">
+            <span class="text-[11px] text-emerald-400 block mb-1">Ukuran Hasil Kompresi</span>
+            <span id="res-compressed-size" class="text-sm sm:text-base font-extrabold text-emerald-400">0 MB</span>
           </div>
-          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-center">
-            <span class="text-xs text-slate-400 block mb-1">Status FPS WhatsApp</span>
-            <span class="text-base sm:text-lg font-bold text-sky-400">30.00 FPS Locked</span>
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 text-center min-w-0">
+            <span class="text-[11px] text-slate-400 block mb-1">Status Framerate</span>
+            <span class="text-sm sm:text-base font-bold text-sky-400">30.00 FPS Locked</span>
           </div>
         </div>
 
@@ -371,17 +369,17 @@
         <div class="space-y-2">
           <label class="text-xs font-semibold text-slate-300 block">Preview Video Hasil Kompresi:</label>
           <div class="rounded-xl overflow-hidden bg-black/80 border border-slate-800 flex justify-center max-h-80">
-            <video id="output-video-player" class="max-h-80 w-auto rounded-lg" controls playsinline></video>
+            <video id="output-video-player" class="max-h-80 w-full object-contain rounded-lg" controls playsinline></video>
           </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Action Buttons (Responsive flex: col on small screens, row on desktop) -->
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <a id="btn-download-video" download="whatsapp-30fps-video.mp4" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 px-6 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 text-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <a id="btn-download-video" download="whatsapp-30fps-video.mp4" class="min-h-[48px] flex-1 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-slate-950 font-bold py-3 px-6 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 text-xs sm:text-sm text-center">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             <span>Download Video (.mp4)</span>
           </a>
-          <button id="btn-reset" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3.5 px-6 rounded-xl border border-slate-700 transition duration-150 text-sm">
+          <button id="btn-reset" class="min-h-[48px] bg-slate-800 hover:bg-slate-700 active:scale-[0.99] text-slate-200 font-semibold py-3 px-6 rounded-xl border border-slate-700 transition duration-150 text-xs sm:text-sm text-center">
             Kompres Video Lain
           </button>
         </div>
@@ -391,28 +389,28 @@
     </div>
 
     <!-- Educational Accordion: Kenapa 30 FPS Kunci Sukses WhatsApp? -->
-    <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 space-y-4">
-      <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-        Tips Optimal Pengunggahan ke WhatsApp Status & Chat
+    <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+      <h3 class="text-xs sm:text-sm md:text-base font-bold text-white flex items-center gap-2">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        Tips Rahasia Pengunggahan WhatsApp Status Berkualitas Tinggi
       </h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
-        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
-          <strong class="text-emerald-400 block text-sm">1. Hindari Frame-Drop</strong>
-          <p class="text-slate-400 leading-relaxed">
-            WhatsApp memaksa konversi ke 30 FPS secara kasar jika Anda mengunggah video 60 FPS. Menguncinya sendiri dengan x264 menjaga motion blur alami tetap rapi tanpa patah.
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300">
+        <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/80 space-y-1">
+          <strong class="text-emerald-400 block text-xs sm:text-sm">1. Mencegah Frame-Drop</strong>
+          <p class="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+            WhatsApp menurunkan 60 FPS secara paksa tanpa interpolasi. Menguncinya ke 30 FPS terlebih dahulu menjaga motion blur alami video tetap halus.
           </p>
         </div>
-        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
-          <strong class="text-emerald-400 block text-sm">2. Flag FastStart MP4</strong>
-          <p class="text-slate-400 leading-relaxed">
-            Parameter <code class="text-emerald-300">-movflags +faststart</code> memindahkan metadata MOOV ke bagian awal file sehingga video dapat diputar seketika di WhatsApp tanpa menunggu selesai download.
+        <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/80 space-y-1">
+          <strong class="text-emerald-400 block text-xs sm:text-sm">2. Flag FastStart MP4</strong>
+          <p class="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+            Parameter <code class="text-emerald-300">-movflags +faststart</code> memindahkan atom MOOV ke bagian awal video agar langsung dapat distreaming tanpa buffering.
           </p>
         </div>
-        <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
-          <strong class="text-emerald-400 block text-sm">3. Color Space YUV420p</strong>
-          <p class="text-slate-400 leading-relaxed">
-            Encoder kami selalu mengunci format pixel ke YUV420p, memastikan tidak ada layar hitam atau error pemutaran di HP Android versi lama maupun iPhone terbaru.
+        <div class="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/80 space-y-1">
+          <strong class="text-emerald-400 block text-xs sm:text-sm">3. Pixel Format YUV420p</strong>
+          <p class="text-slate-400 leading-relaxed text-[11px] sm:text-xs">
+            Video 10-bit atau HDR iPhone dikonversi ke standar YUV420p 8-bit sehingga bebas layar hitam (black screen) di semua jenis smartphone.
           </p>
         </div>
       </div>
@@ -421,13 +419,13 @@
   </main>
 
   <!-- GitHub Pages & COI Setup Modal -->
-  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-base flex items-center gap-2">
-          🚀 Panduan Deploy GitHub Pages (Cross-Origin Isolation)
+        <h3 class="font-bold text-white text-sm sm:text-base flex items-center gap-2">
+          🚀 Panduan GitHub Pages (Cross-Origin Isolation)
         </h3>
-        <button id="btn-close-guide" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+        <button id="btn-close-guide" class="text-slate-400 hover:text-white p-1.5 rounded-lg text-lg">✕</button>
       </div>
 
       <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
@@ -435,8 +433,8 @@
           FFmpeg WebAssembly memerlukan <strong>SharedArrayBuffer</strong> untuk kompresi video berkecepatan tinggi multi-threading. GitHub Pages tidak mengizinkan kustomisasi HTTP Header server, sehingga trik resmi adalah menggunakan <strong>Service Worker</strong> (<code class="text-emerald-300">coi-serviceworker.js</code>).
         </p>
 
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-          <strong class="text-emerald-400 block">Langkah-langkah di GitHub Repo Anda:</strong>
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+          <strong class="text-emerald-400 block">Langkah-langkah di GitHub Repo:</strong>
           <ol class="list-decimal list-inside space-y-1 text-slate-300">
             <li>Simpan file ini sebagai <code class="text-white font-mono">index.html</code> pada repository Anda.</li>
             <li>Letakkan file <code class="text-emerald-400 font-mono">coi-serviceworker.js</code> di folder yang sama (root repo).</li>
@@ -449,16 +447,16 @@
         </p>
 
         <div class="relative">
-          <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto select-all max-h-36">/*! coi-serviceworker v0.1.7 - MIT */
+          <pre class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] sm:text-[11px] font-mono text-slate-300 overflow-x-auto select-all max-h-36">/*! coi-serviceworker v0.1.7 - MIT */
 if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{const{request:r}=e;if(r.cache==='only-if-cached'&&r.mode!=='same-origin')return;e.respondWith(fetch(r).then(res=>{if(res.status===0)return res;const h=new Headers(res.headers);h.set('Cross-Origin-Embedder-Policy','require-corp');h.set('Cross-Origin-Opener-Policy','same-origin');return new Response(res.body,{status:res.status,statusText:res.statusText,headers:h});}));});}else{(()=>{const n=navigator;if(window.crossOriginIsolated||!n.serviceWorker)return;n.serviceWorker.register(window.document.currentScript.src).then(r=>{r.addEventListener('updatefound',()=>location.reload());if(r.active&&!n.serviceWorker.controller)location.reload();});})();}</pre>
-          <button id="btn-copy-coi" class="absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded text-[10px] font-medium">
+          <button id="btn-copy-coi" class="min-h-[30px] absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded text-[10px] font-medium active:scale-95">
             Salin Kode
           </button>
         </div>
       </div>
 
       <div class="flex justify-end pt-2">
-        <button id="btn-close-guide-2" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition">
+        <button id="btn-close-guide-2" class="min-h-[36px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition">
           Mengerti
         </button>
       </div>
@@ -466,24 +464,27 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
   </div>
 
   <!-- Notification Toast Container -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-emerald-500/50 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
+  <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-emerald-500/50 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2">
     <span id="toast-message">Pesan notifikasi</span>
   </div>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-400">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+  <footer class="border-t border-slate-800/80 py-4 sm:py-6 text-center text-xs text-slate-400">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2.5">
       <p>© 2026 WhatsApp 30 FPS Compressor • 100% Client-Side WebAssembly</p>
-      <div class="flex items-center gap-4 text-slate-400">
+      <div class="flex items-center gap-3 text-slate-400 text-[11px]">
         <span>libx264 • aac • faststart</span>
         <span>•</span>
-        <span class="text-emerald-400 font-medium">Privasi 100% Terjaga</span>
+        <span class="text-emerald-400 font-medium">100% Privasi Terjaga</span>
       </div>
     </div>
   </footer>
 
-  <!-- Application Logic -->
-  <script>
+  <!-- Application Logic (ES Module Direct Import) -->
+  <script type="module">
+    import { FFmpeg } from 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
+    import { toBlobURL } from 'https://unpkg.com/@ffmpeg/util@0.12.10/dist/esm/index.js';
+
     // State management
     const state = {
       ffmpeg: null,
@@ -545,13 +546,13 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toast-message');
       toastMsg.textContent = message;
-      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
       setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
       }, duration);
     }
 
-    // Format bytes to human readable
+    // Format bytes
     function formatBytes(bytes, decimals = 2) {
       if (!+bytes) return '0 Bytes';
       const k = 1024;
@@ -561,7 +562,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     }
 
-    // Format seconds to mm:ss
+    // Format seconds
     function formatSeconds(secs) {
       if (isNaN(secs)) return '00:00';
       const m = Math.floor(secs / 60);
@@ -569,44 +570,58 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    // 1. Cross-Origin Isolation Check & Service Worker Handling
-    window.addEventListener('DOMContentLoaded', () => {
+    // Append log helper
+    function appendLog(msg) {
+      if (!msg) return;
+      const row = document.createElement('div');
+      row.className = 'leading-tight py-0.5 border-b border-slate-900/60 font-mono text-[10px] text-slate-300 break-all';
+      row.textContent = msg;
+      logsContainer.appendChild(row);
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+
+    // Check Cross-Origin Isolation on load
+    function checkCoiStatus() {
       const coiBadge = document.getElementById('coi-badge');
       const coiStatusText = document.getElementById('coi-status-text');
       const coiBanner = document.getElementById('coi-alert-banner');
 
       if (window.crossOriginIsolated) {
-        coiBadge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-emerald-950/60 border-emerald-500/40 text-emerald-400';
+        coiBadge.className = 'flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium border bg-emerald-950/60 border-emerald-500/40 text-emerald-400';
         coiBadge.firstElementChild.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        coiStatusText.textContent = '⚡ Multi-Thread Aktif';
+        coiStatusText.textContent = 'Multi-Thread (COI Aktif)';
         coiBanner.classList.add('hidden');
       } else {
-        coiBadge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-950/60 border-amber-500/40 text-amber-300';
+        coiBadge.className = 'flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-medium border bg-amber-950/60 border-amber-500/40 text-amber-300';
         coiBadge.firstElementChild.className = 'w-2 h-2 rounded-full bg-amber-400';
-        coiStatusText.textContent = 'Mode Single-Thread (COI Belum Aktif)';
+        coiStatusText.textContent = 'Single-Thread Mode';
         coiBanner.classList.remove('hidden');
       }
-    });
+    }
+    checkCoiStatus();
 
     // Preset Selection UI
-    window.selectPreset = function(preset) {
+    function selectPreset(preset) {
       state.currentPreset = preset;
       if (preset === 'hd') {
-        cardPresetHd.className = 'cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40';
-        cardPresetData.className = 'cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-5 transition duration-150 relative';
-        radioHdIcon.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold';
+        cardPresetHd.className = 'cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-4 sm:p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40 select-none';
+        cardPresetData.className = 'cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-4 sm:p-5 transition duration-150 relative select-none';
+        radioHdIcon.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0';
         radioHdIcon.textContent = '✓';
-        radioDataIcon.className = 'w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold';
+        radioDataIcon.className = 'w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0';
         radioDataIcon.textContent = '';
       } else {
-        cardPresetData.className = 'cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40';
-        cardPresetHd.className = 'cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-5 transition duration-150 relative';
-        radioDataIcon.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold';
+        cardPresetData.className = 'cursor-pointer border-2 border-emerald-500 bg-slate-900/90 rounded-2xl p-4 sm:p-5 transition duration-150 relative shadow-lg shadow-emerald-950/40 select-none';
+        cardPresetHd.className = 'cursor-pointer border-2 border-slate-800 hover:border-slate-700 bg-slate-900/60 rounded-2xl p-4 sm:p-5 transition duration-150 relative select-none';
+        radioDataIcon.className = 'w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0';
         radioDataIcon.textContent = '✓';
-        radioHdIcon.className = 'w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold';
+        radioHdIcon.className = 'w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-950 text-xs font-bold shrink-0';
         radioHdIcon.textContent = '';
       }
-    };
+    }
+
+    cardPresetHd.addEventListener('click', () => selectPreset('hd'));
+    cardPresetData.addEventListener('click', () => selectPreset('data'));
 
     // Drag & Drop handlers
     dropZone.addEventListener('click', () => fileInput.click());
@@ -654,10 +669,8 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       videoFilename.textContent = file.name;
       metaSize.textContent = formatBytes(file.size);
 
-      // Create preview & read video width, height, duration
       const fileUrl = URL.createObjectURL(file);
       inputPreviewVideo.src = fileUrl;
-
       videoMetaSummary.textContent = 'Membaca durasi & resolusi video...';
 
       inputPreviewVideo.onloadedmetadata = () => {
@@ -679,17 +692,16 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       };
 
       inputPreviewVideo.onerror = () => {
-        // Fallback if browser can't preview codec (e.g. MKV)
         metaDuration.textContent = 'Bervariasi';
         metaResolution.textContent = 'Auto Deteksi';
-        videoMetaSummary.textContent = `${formatBytes(file.size)} (MKV/Custom Container)`;
+        videoMetaSummary.textContent = `${formatBytes(file.size)} (Container Video)`;
         uploadSection.classList.add('hidden');
         configSection.classList.remove('hidden');
         resultSection.classList.add('hidden');
       };
     }
 
-    // Toggle Console Log Accordion
+    // Toggle Console Log
     toggleLogsBtn.addEventListener('click', () => {
       const isHidden = logsContainer.classList.contains('hidden');
       if (isHidden) {
@@ -701,55 +713,49 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       }
     });
 
-    function appendLog(msg) {
-      if (!msg) return;
-      const row = document.createElement('div');
-      row.className = 'leading-tight py-0.5 border-b border-slate-900/60 font-mono text-[10px] text-slate-300';
-      row.textContent = msg;
-      logsContainer.appendChild(row);
-      logsContainer.scrollTop = logsContainer.scrollHeight;
+    function updateProgress(percent) {
+      progressBarFill.style.width = `${percent}%`;
+      processPercentage.textContent = `${percent}%`;
     }
 
-    // Robust Blob URL Helper
-    async function getBlobURL(url, type) {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP Error: ${resp.status} saat memuat ${url}`);
-      const blob = await resp.blob();
-      return URL.createObjectURL(new Blob([blob], { type }));
+    // Helper untuk memuat core FFmpeg via Blob URL (Menghilangkan error CORS Worker)
+    async function loadFFmpegCore(ffmpeg, isMultiThread) {
+      const baseURL = isMultiThread
+        ? 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
+        : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+
+      appendLog(`[Engine] Mengunduh modul runtime dari: ${baseURL}`);
+
+      const loadConfig = {
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      };
+
+      if (isMultiThread) {
+        loadConfig.workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+      }
+
+      await ffmpeg.load(loadConfig);
     }
 
-    // Initialize FFmpeg.wasm Engine dynamically
+    // Inisialisasi FFmpeg dengan fallback otomatis
     async function initFFmpeg() {
       if (state.isFFmpegLoaded && state.ffmpeg) return state.ffmpeg;
 
-      processStatusHeading.textContent = 'Mengunduh Mesin FFmpeg WASM...';
-      processStatusDetail.textContent = 'Mengunduh runtime WebAssembly dari CDN (~30MB pada kali pertama)...';
-      appendLog('[System] Memulai inisialisasi FFmpeg.wasm...');
+      processStatusHeading.textContent = 'Memuat Runtime FFmpeg.wasm...';
+      processStatusDetail.textContent = 'Mengunduh pustaka WebAssembly ke browser...';
+      appendLog('[System] Memulai inisialisasi FFmpeg.wasm (ES Module)...');
 
-      let FFmpegClass = null;
-
-      // 1. Check UMD global
-      if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
-        FFmpegClass = window.FFmpegWASM.FFmpeg;
-      } else {
-        // Fallback dynamic ESM import
-        appendLog('[System] Mengimpor modul ESM @ffmpeg/ffmpeg...');
-        const mod = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/+esm');
-        FFmpegClass = mod.FFmpeg;
-      }
-
-      const ffmpeg = new FFmpegClass();
+      const ffmpeg = new FFmpeg();
 
       // Log listener
       ffmpeg.on('log', ({ message }) => {
         appendLog(message);
-
-        // Parse log for current frame / time if available
         if (message.includes('frame=') && message.includes('fps=')) {
-          processStatusHeading.textContent = 'Sedang Mengompres Frame (30 FPS Lock)...';
+          processStatusHeading.textContent = 'Sedang Mengompresi Frame (30 FPS Lock)...';
           const match = message.match(/time=(\d+:\d+:\d+\.\d+)/);
           if (match && match[1]) {
-            processStatusDetail.textContent = `Posisi Transcode: ${match[1]}`;
+            processStatusDetail.textContent = `Progress Waktu Video: ${match[1]}`;
           }
         }
       });
@@ -767,48 +773,40 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
         updateProgress(pct);
       });
 
-      // Multithreading vs Single-thread selection based on Cross-Origin Isolation
-      const isMultiThread = window.crossOriginIsolated;
-      appendLog(`[System] Cross-Origin Isolated: ${isMultiThread ? 'AKTIF (Multi-Threading core-mt)' : 'TIDAK (Fallback Single-Thread)'}`);
+      // Coba Multi-Thread terlebih dahulu jika browser mendukung Cross-Origin Isolation
+      const canUseMultiThread = Boolean(window.crossOriginIsolated);
+      let loadedSuccessfully = false;
 
-      const baseURL = isMultiThread
-        ? 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
-        : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-
-      try {
-        if (isMultiThread) {
-          await ffmpeg.load({
-            coreURL: await getBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await getBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-            workerURL: await getBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
-          });
-        } else {
-          await ffmpeg.load({
-            coreURL: await getBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await getBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
-          });
+      if (canUseMultiThread) {
+        try {
+          appendLog('[System] Mencoba memuat Core Multi-Thread (core-mt)...');
+          await loadFFmpegCore(ffmpeg, true);
+          loadedSuccessfully = true;
+          appendLog('[System] Core Multi-Thread berhasil diaktifkan!');
+        } catch (err) {
+          console.warn('Gagal memuat core multi-thread:', err);
+          appendLog(`[Warning] Mode Multi-Thread gagal (${err.message}). Beralih ke Single-Thread...`);
         }
-      } catch (err) {
-        appendLog(`[Warning] Load MT gagal (${err.message}). Mencoba fallback core single-thread...`);
-        const fallbackBase = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-        await ffmpeg.load({
-          coreURL: await getBlobURL(`${fallbackBase}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await getBlobURL(`${fallbackBase}/ffmpeg-core.wasm`, 'application/wasm')
-        });
+      }
+
+      // Fallback ke Single-Thread jika Multi-Thread gagal atau COI belum aktif
+      if (!loadedSuccessfully) {
+        try {
+          appendLog('[System] Memuat Core Single-Thread (core)...');
+          await loadFFmpegCore(ffmpeg, false);
+          appendLog('[System] Core Single-Thread berhasil dimuat!');
+        } catch (stErr) {
+          console.error('Fatal load core:', stErr);
+          throw new Error(`Gagal memuat runtime WebAssembly: ${stErr.message}`);
+        }
       }
 
       state.ffmpeg = ffmpeg;
       state.isFFmpegLoaded = true;
-      appendLog('[System] Mesin FFmpeg.wasm berhasil dimuat dan siap digunakan!');
       return ffmpeg;
     }
 
-    function updateProgress(percent) {
-      progressBarFill.style.width = `${percent}%`;
-      processPercentage.textContent = `${percent}%`;
-    }
-
-    // 4. Logika Konversi FFmpeg
+    // Logika Utama Kompresi Video 30 FPS
     btnStartProcess.addEventListener('click', async () => {
       if (!state.selectedFile || state.isProcessing) return;
 
@@ -823,13 +821,12 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       clearInterval(state.timerInterval);
       state.timerInterval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
-        processTimeElapsed.textContent = `Waktu Berjalan: ${formatSeconds(elapsed)}`;
+        processTimeElapsed.textContent = `Waktu: ${formatSeconds(elapsed)}`;
       }, 1000);
 
-      // Highlight step 1
-      document.getElementById('step-1').className = 'py-2 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
-      document.getElementById('step-2').className = 'py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
-      document.getElementById('step-3').className = 'py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
+      document.getElementById('step-1').className = 'py-2 px-1 sm:px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
+      document.getElementById('step-2').className = 'py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
+      document.getElementById('step-3').className = 'py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
 
       const file = state.selectedFile;
       const fileExt = file.name.substring(file.name.lastIndexOf('.')) || '.mp4';
@@ -840,20 +837,20 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
         const ffmpeg = await initFFmpeg();
 
         // Step 2: Write input file to virtual memory
-        document.getElementById('step-1').className = 'py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
-        document.getElementById('step-2').className = 'py-2 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
+        document.getElementById('step-1').className = 'py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
+        document.getElementById('step-2').className = 'py-2 px-1 sm:px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
 
-        processStatusHeading.textContent = 'Menulis File ke Virtual File System...';
-        processStatusDetail.textContent = `Menyiapkan ${formatBytes(file.size)} ke memori WASM...`;
-        appendLog(`[I/O] Mengunggah file ${file.name} ke filesystem virtual...`);
+        processStatusHeading.textContent = 'Menyiapkan Memori Virtual...';
+        processStatusDetail.textContent = `Menulis ${formatBytes(file.size)} ke filesystem WASM...`;
+        appendLog(`[I/O] Mengunggah ${file.name} ke filesystem internal...`);
 
         const fileBuffer = new Uint8Array(await file.arrayBuffer());
         await ffmpeg.writeFile(inputFilename, fileBuffer);
-        appendLog(`[I/O] File ${inputFilename} berhasil ditulis.`);
+        appendLog(`[I/O] File ${inputFilename} siap diproses.`);
 
-        // Step 3: Configure FFmpeg arguments
-        processStatusHeading.textContent = 'Mengompresi Video ke 30 FPS Lock...';
-        processStatusDetail.textContent = 'Menjalankan encoder H.264 (x264 fast) + AAC...';
+        // Step 3: Filter dan Parameter Kompresi WhatsApp
+        processStatusHeading.textContent = 'Mengompresi ke 30 FPS Lock...';
+        processStatusDetail.textContent = 'Menjalankan encoder libx264 faststart...';
 
         let videoFilter = '';
         let crfValue = '20';
@@ -861,15 +858,14 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
         let bufSize = '10M';
 
         if (state.currentPreset === 'hd') {
-          // HD Smooth: Lock 30 FPS, Max 1080p, CRF 20, maxrate 5M
-          // Menjaga aspect ratio & memastikan dimensi genap (divisible by 2) untuk libx264
-          videoFilter = "scale='if(gt(iw,1920),1920,iw)':'if(gt(ih,1080),1080,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
+          // HD Smooth: Lock 30 FPS, Max 1080p, dimensi genap (divisible by 2)
+          videoFilter = "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
           crfValue = '20';
           maxRate = '5M';
           bufSize = '10M';
         } else {
-          // Hemat Data: Lock 30 FPS, Scale 720p, CRF 23, maxrate 2.5M
-          videoFilter = "scale='if(gt(iw,1280),1280,iw)':'if(gt(ih,720),720,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
+          // Hemat Data: Lock 30 FPS, Skala 720p, dimensi genap
+          videoFilter = "scale='if(gt(iw,ih),min(1280,iw),-2)':'if(gt(iw,ih),-2,min(1280,ih))',scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
           crfValue = '23';
           maxRate = '2.5M';
           bufSize = '5M';
@@ -893,16 +889,16 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
 
         appendLog(`[Command] ffmpeg ${ffmpegArgs.join(' ')}`);
 
-        // Execute transcoding
+        // Transcoding execution
         await ffmpeg.exec(ffmpegArgs);
 
         // Step 4: Finalizing
-        document.getElementById('step-2').className = 'py-2 px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
-        document.getElementById('step-3').className = 'py-2 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
+        document.getElementById('step-2').className = 'py-2 px-1 sm:px-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-slate-400';
+        document.getElementById('step-3').className = 'py-2 px-1 sm:px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold';
 
-        processStatusHeading.textContent = 'Membaca Hasil Output...';
-        processStatusDetail.textContent = 'Membangun Object URL MP4...';
-        appendLog('[System] Encoding selesai! Membaca output file dari virtual memory...');
+        processStatusHeading.textContent = 'Membangun Video MP4...';
+        processStatusDetail.textContent = 'Membaca hasil dari memori WASM...';
+        appendLog('[System] Kompresi selesai! Membaca output file...');
 
         const outputData = await ffmpeg.readFile(outputFilename);
         const outputBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
@@ -910,26 +906,24 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
         state.outputBlobUrl = outputUrl;
 
         updateProgress(100);
-        appendLog(`[Success] Video berhasil dibuat! Ukuran output: ${formatBytes(outputBlob.size)}`);
+        appendLog(`[Sukses] Berhasil dikompresi! Ukuran: ${formatBytes(outputBlob.size)}`);
 
-        // Clean up virtual file system memory
-        appendLog('[Memory] Membersihkan memori virtual file system...');
+        // Membersihkan memori virtual
         try {
           await ffmpeg.deleteFile(inputFilename);
           await ffmpeg.deleteFile(outputFilename);
-          appendLog('[Memory] Cache virtual disk dibersihkan.');
+          appendLog('[Memory] Memori virtual berhasil dibersihkan.');
         } catch (memErr) {
-          console.warn('Memory cleanup notice:', memErr);
+          console.warn('Memory cleanup:', memErr);
         }
 
-        // Render Results
         renderResults(file.size, outputBlob.size, outputUrl, file.name);
 
       } catch (err) {
-        console.error('FFmpeg Error:', err);
+        console.error('Transcode Error:', err);
         appendLog(`[ERROR FATAL] ${err.message}`);
-        processStatusHeading.textContent = 'Terjadi Kesalahan Saat Mengompresi';
-        processStatusDetail.textContent = err.message || 'Periksa file video atau muat ulang halaman.';
+        processStatusHeading.textContent = 'Kompresi Gagal';
+        processStatusDetail.textContent = err.message || 'Periksa file video Anda atau coba muat ulang.';
         showToast('Gagal memproses video: ' + (err.message || 'Error WebAssembly'));
       } finally {
         state.isProcessing = false;
@@ -937,7 +931,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       }
     });
 
-    // Render Final Results
+    // Render Hasil
     function renderResults(originalBytes, compressedBytes, blobUrl, originalName) {
       processSection.classList.add('hidden');
       resultSection.classList.remove('hidden');
@@ -949,22 +943,21 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       const reductionPercent = Math.round((savedBytes / originalBytes) * 100);
 
       if (reductionPercent > 0) {
-        reductionBadge.textContent = `-${reductionPercent}% Lebih Hemat`;
-        reductionBadge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold px-3 py-1 rounded-full';
+        reductionBadge.textContent = `-${reductionPercent}% Lebih Ringan`;
+        reductionBadge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full shrink-0';
       } else {
-        reductionBadge.textContent = 'Kualitas Dipertahankan (30 FPS)';
-        reductionBadge.className = 'bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-bold px-3 py-1 rounded-full';
+        reductionBadge.textContent = 'Framerate 30 FPS Terkunci';
+        reductionBadge.className = 'bg-sky-500/20 text-sky-400 border border-sky-500/40 text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full shrink-0';
       }
 
       outputVideoPlayer.src = blobUrl;
 
-      // Clean base name for download
       const cleanName = originalName.replace(/\.[^/.]+$/, "");
       const finalDownloadName = `[WA-30FPS]-${cleanName}.mp4`;
       btnDownloadVideo.href = blobUrl;
       btnDownloadVideo.setAttribute('download', finalDownloadName);
 
-      showToast('Kompresi video 30 FPS berhasil diselesaikan!');
+      showToast('Video 30 FPS berhasil disiapkan untuk WhatsApp!');
     }
 
     // Reset button
@@ -994,7 +987,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       if (e.target === guideModal) guideModal.classList.add('hidden');
     });
 
-    // Copy coi script button
+    // Copy coi script
     document.getElementById('btn-copy-coi').addEventListener('click', () => {
       const code = `/*! coi-serviceworker v0.1.7 - MIT */
 if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{const{request:r}=e;if(r.cache==='only-if-cached'&&r.mode!=='same-origin')return;e.respondWith(fetch(r).then(res=>{if(res.status===0)return res;const h=new Headers(res.headers);h.set('Cross-Origin-Embedder-Policy','require-corp');h.set('Cross-Origin-Opener-Policy','same-origin');return new Response(res.body,{status:res.status,statusText:res.statusText,headers:h});}));});}else{(()=>{const n=navigator;if(window.crossOriginIsolated||!n.serviceWorker)return;n.serviceWorker.register(window.document.currentScript.src).then(r=>{r.addEventListener('updatefound',()=>location.reload());if(r.active&&!n.serviceWorker.controller)location.reload();});})();}`;
@@ -1007,9 +1000,9 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast('Kode coi-serviceworker.js berhasil disalin ke clipboard!');
+        showToast('Kode coi-serviceworker.js berhasil disalin!');
       } catch (err) {
-        showToast('Gagal menyalin otomatis, silakan pilih dan salin manual.');
+        showToast('Gagal menyalin otomatis, silakan pilih teks secara manual.');
       }
       document.body.removeChild(textArea);
     });
