@@ -150,25 +150,33 @@
     <!-- Upload & Compression Area -->
     <div class="space-y-6">
 
-      <!-- Upload Drop Zone -->
+      <!-- Upload Drop Zone (Menggunakan native label for="file-input" agar 100% responsif & anti-macet) -->
       <section id="upload-section" class="relative group">
-        <input type="file" id="file-input" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.webm" class="hidden">
+        <!-- Gunakan class "sr-only" alih-alih "hidden" agar browser mobile tidak memblokir dialog file -->
+        <input type="file" id="file-input" accept="video/mp4,video/quicktime,video/x-matroska,video/webm,.mp4,.mov,.mkv,.webm" class="sr-only">
         
-        <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 active:border-emerald-500 bg-slate-900/60 hover:bg-slate-900/90 rounded-2xl p-6 sm:p-10 md:p-12 text-center transition duration-200 cursor-pointer flex flex-col items-center justify-center space-y-3 sm:space-y-4 shadow-inner">
-          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition duration-200 shrink-0">
+        <label for="file-input" id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 active:border-emerald-500 bg-slate-900/60 hover:bg-slate-900/90 rounded-2xl p-6 sm:p-10 md:p-12 text-center transition duration-200 cursor-pointer flex flex-col items-center justify-center space-y-3 sm:space-y-4 shadow-inner block">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition duration-200 shrink-0 mx-auto pointer-events-none">
             <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
           </div>
-          <div class="space-y-1">
+          <div class="space-y-1 pointer-events-none">
             <p class="text-sm sm:text-base md:text-lg font-semibold text-white">Pilih atau Tarik Video ke Sini</p>
-            <p class="text-xs sm:text-sm text-slate-400">Klik di sini untuk membuka galeri / file penyimpanan</p>
+            <p class="text-xs sm:text-sm text-slate-400">Klik di mana saja pada area ini atau tekan tombol di bawah</p>
           </div>
-          <div class="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60">
+          <!-- Tombol visual upload ramah jempol -->
+          <div class="pt-1 pointer-events-none">
+            <span class="inline-flex items-center gap-2 min-h-[48px] px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>Pilih File Video</span>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 pointer-events-none">
             <span class="font-medium text-slate-300">Format:</span>
             <span>MP4, MOV (iPhone), MKV, WebM</span>
           </div>
-        </div>
+        </label>
       </section>
 
       <!-- Video Details & Configuration Panel (Hidden initially) -->
@@ -480,11 +488,8 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
     </div>
   </footer>
 
-  <!-- Application Logic (ES Module Direct Import) -->
+  <!-- Application Logic (ES Module dengan Lazy Load & Fallback Multi-CDN) -->
   <script type="module">
-    import { FFmpeg } from 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
-    import { toBlobURL } from 'https://unpkg.com/@ffmpeg/util@0.12.10/dist/esm/index.js';
-
     // State management
     const state = {
       ffmpeg: null,
@@ -623,9 +628,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
     cardPresetHd.addEventListener('click', () => selectPreset('hd'));
     cardPresetData.addEventListener('click', () => selectPreset('data'));
 
-    // Drag & Drop handlers
-    dropZone.addEventListener('click', () => fileInput.click());
-
+    // Drag & Drop handlers (Klik sudah ditangani native oleh tag <label for="file-input">)
     ['dragenter', 'dragover'].forEach(eventName => {
       dropZone.addEventListener(eventName, (e) => {
         e.preventDefault();
@@ -645,11 +648,13 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
     dropZone.addEventListener('drop', (e) => {
       const dt = e.dataTransfer;
       const files = dt.files;
-      if (files.length > 0) handleFileSelect(files[0]);
+      if (files && files.length > 0) handleFileSelect(files[0]);
     });
 
     fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+      }
     });
 
     btnChangeFile.addEventListener('click', () => {
@@ -718,24 +723,74 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       processPercentage.textContent = `${percent}%`;
     }
 
-    // Helper untuk memuat core FFmpeg via Blob URL (Menghilangkan error CORS Worker)
-    async function loadFFmpegCore(ffmpeg, isMultiThread) {
-      const baseURL = isMultiThread
-        ? 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm'
-        : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    // Dynamic Module Loader dengan fallback multi-CDN (jsdelivr & unpkg)
+    let FFmpegClass = null;
+    let toBlobURLFn = null;
 
-      appendLog(`[Engine] Mengunduh modul runtime dari: ${baseURL}`);
+    async function loadFFmpegModules() {
+      if (FFmpegClass && toBlobURLFn) return { FFmpeg: FFmpegClass, toBlobURL: toBlobURLFn };
 
-      const loadConfig = {
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-      };
+      const cdnList = [
+        {
+          name: 'jsdelivr',
+          ffmpegUrl: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js',
+          utilUrl: 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.10/dist/esm/index.js'
+        },
+        {
+          name: 'unpkg',
+          ffmpegUrl: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js',
+          utilUrl: 'https://unpkg.com/@ffmpeg/util@0.12.10/dist/esm/index.js'
+        }
+      ];
 
-      if (isMultiThread) {
-        loadConfig.workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+      let lastError = null;
+      for (const cdn of cdnList) {
+        try {
+          appendLog(`[Engine] Mengimpor library FFmpeg dari ${cdn.name}...`);
+          const [ffmpegMod, utilMod] = await Promise.all([
+            import(/* @vite-ignore */ cdn.ffmpegUrl),
+            import(/* @vite-ignore */ cdn.utilUrl)
+          ]);
+          FFmpegClass = ffmpegMod.FFmpeg;
+          toBlobURLFn = utilMod.toBlobURL;
+          return { FFmpeg: FFmpegClass, toBlobURL: toBlobURLFn };
+        } catch (err) {
+          console.warn(`Gagal memuat modul dari ${cdn.name}:`, err);
+          lastError = err;
+        }
       }
+      throw new Error(`Gagal mengimpor modul FFmpeg: ${lastError?.message || 'Koneksi CDN terganggu'}`);
+    }
 
-      await ffmpeg.load(loadConfig);
+    // Helper untuk memuat core FFmpeg via Blob URL dengan fallback CDN
+    async function loadFFmpegCore(ffmpeg, toBlobURL, isMultiThread) {
+      const corePkg = isMultiThread ? 'core-mt' : 'core';
+      const cdnBases = [
+        `https://cdn.jsdelivr.net/npm/@ffmpeg/${corePkg}@0.12.6/dist/esm`,
+        `https://unpkg.com/@ffmpeg/${corePkg}@0.12.6/dist/esm`
+      ];
+
+      let lastErr = null;
+      for (const baseURL of cdnBases) {
+        try {
+          appendLog(`[Engine] Mengunduh runtime (${corePkg}) dari ${new URL(baseURL).hostname}...`);
+          const loadConfig = {
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+          };
+
+          if (isMultiThread) {
+            loadConfig.workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+          }
+
+          await ffmpeg.load(loadConfig);
+          return;
+        } catch (err) {
+          console.warn(`Gagal memuat core dari ${baseURL}:`, err);
+          lastErr = err;
+        }
+      }
+      throw lastErr || new Error(`Gagal memuat runtime WebAssembly ${corePkg}`);
     }
 
     // Inisialisasi FFmpeg dengan fallback otomatis
@@ -743,9 +798,10 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       if (state.isFFmpegLoaded && state.ffmpeg) return state.ffmpeg;
 
       processStatusHeading.textContent = 'Memuat Runtime FFmpeg.wasm...';
-      processStatusDetail.textContent = 'Mengunduh pustaka WebAssembly ke browser...';
-      appendLog('[System] Memulai inisialisasi FFmpeg.wasm (ES Module)...');
+      processStatusDetail.textContent = 'Mengunduh modul WebAssembly ke browser...';
+      appendLog('[System] Memulai inisialisasi FFmpeg.wasm...');
 
+      const { FFmpeg, toBlobURL } = await loadFFmpegModules();
       const ffmpeg = new FFmpeg();
 
       // Log listener
@@ -780,7 +836,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       if (canUseMultiThread) {
         try {
           appendLog('[System] Mencoba memuat Core Multi-Thread (core-mt)...');
-          await loadFFmpegCore(ffmpeg, true);
+          await loadFFmpegCore(ffmpeg, toBlobURL, true);
           loadedSuccessfully = true;
           appendLog('[System] Core Multi-Thread berhasil diaktifkan!');
         } catch (err) {
@@ -793,7 +849,7 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
       if (!loadedSuccessfully) {
         try {
           appendLog('[System] Memuat Core Single-Thread (core)...');
-          await loadFFmpegCore(ffmpeg, false);
+          await loadFFmpegCore(ffmpeg, toBlobURL, false);
           appendLog('[System] Core Single-Thread berhasil dimuat!');
         } catch (stErr) {
           console.error('Fatal load core:', stErr);
@@ -858,13 +914,11 @@ if(typeof window==='undefined'){self.addEventListener('install',()=>self.skipWai
         let bufSize = '10M';
 
         if (state.currentPreset === 'hd') {
-          // HD Smooth: Lock 30 FPS, Max 1080p, dimensi genap (divisible by 2)
           videoFilter = "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
           crfValue = '20';
           maxRate = '5M';
           bufSize = '10M';
         } else {
-          // Hemat Data: Lock 30 FPS, Skala 720p, dimensi genap
           videoFilter = "scale='if(gt(iw,ih),min(1280,iw),-2)':'if(gt(iw,ih),-2,min(1280,ih))',scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30";
           crfValue = '23';
           maxRate = '2.5M';
